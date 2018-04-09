@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Threading;
 
 using Server.Middle;
+using Server.Assistant;
 
 //使用到conn的线程：主线程、异步Socket回调函数的线程、心跳的定时器线程
 //定时器回调函数也不在主线程
@@ -31,7 +32,7 @@ namespace Server.Core {
         public byte[] lenBytes = new byte[sizeof(UInt32)];
         public Int32 msgLength = 0;
 
-        public long lastTickTime = long.MinValue;
+        public long lastTickTime = long.MinValue;   //该连接上一次通信时间
 
         public Player player;
 
@@ -43,8 +44,7 @@ namespace Server.Core {
             this.socket = socket;
             isUse = true;
             buffCount = 0;
-            //心跳处理
-            //lastTickTime = Sys.GetTImeStamp(); 
+            lastTickTime = Sys.GetTimeStamp(); 
         }
 
         public int BuffRemain() {

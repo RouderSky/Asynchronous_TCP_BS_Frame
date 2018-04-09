@@ -12,6 +12,10 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
+using Server.Assistant;
+
+//读conn的时候不需要lock吗？其实是一个读写者问题
+
 namespace Server.Core {
     class ServNet {
         public Socket listenfd;
@@ -21,6 +25,10 @@ namespace Server.Core {
 
         public static ServNet instance;
 
+        //心跳处理
+        System.Timers.Timer timer = new System.Timers.Timer(1000);      //检测用定时器
+        public long heartBeatTime = 10;        //最大通信间隔，单位是秒，有客户端超过这个时间没有通信过就断开
+
         public ServNet() {
             instance = this;        //这是单例模式？？？
         }
@@ -29,15 +37,42 @@ namespace Server.Core {
             if (conns == null)
                 return -1;
             for (int i = 0; i < conns.Length; ++i) {
-                if (conns[i].isUse == false) {
+                if (conns[i].isUse == false) {      //从这里可以看出，当前线程并不安全；有可能两个客户端取到相同的index，也就是说有一个客户端会逻辑上连接失败
                     return i;
                 }
             }
             return -1;
         }
 
+        public void HeartBeat() {
+            Console.WriteLine("[主定时器执行]");
+            long timeNow = Sys.GetTimeStamp();
+
+            for (int i = 0; i < conns.Length; ++i) {
+                Conn conn = conns[i];
+                if (conn == null)       //不可能
+                    continue;
+                if (!conn.isUse)
+                    continue;
+
+                if (timeNow - conn.lastTickTime > heartBeatTime) {
+                    Console.WriteLine("[心跳引起断开连接]" + conn.GetAddress());
+                    lock (conn)
+                        conn.Close();
+                }
+            }
+        }
+        public void HandleMainTimer(object sender, System.Timers.ElapsedEventArgs e) {
+            HeartBeat();
+            timer.Start();
+        }
         //启动服务器
         public void Start(string host, int port) {
+            //心跳处理用定时器
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(HandleMainTimer);
+            timer.AutoReset = false;
+            timer.Enabled = true;       //这样可以启动定时器？和Start的功能完全一样？
+
             conns = new Conn[maxConn];
             for (int i = 0; i < maxConn; ++i) {
                 conns[i] = new Conn();
@@ -97,9 +132,11 @@ namespace Server.Core {
             Conn conn = (Conn)ar.AsyncState;
             lock (conn) {
                 try {
+                    //为什么服务器Close一个conn之后，还能进来一次这个函数，且这时socket已经不存在？
                     int count = conn.socket.EndReceive(ar);
+
                     if (count <= 0) {
-                        Console.WriteLine("收到 [" + conn.GetAddress() + "] 断开连接");
+                        Console.WriteLine("收到 [" + conn.GetAddress() + "] 断开连接1");
                         conn.Close();
                         return;
                     }
@@ -114,8 +151,8 @@ namespace Server.Core {
                                             ReceiveCb,
                                             conn);
                 }
-                catch {
-                    Console.WriteLine("收到 [" + conn.GetAddress() + "] 断开连接");
+                catch(Exception e){
+                    Console.WriteLine("收到 [" + conn.GetAddress() + "] 断开连接2 " + e.Message);
                     conn.Close();
                 }
             }
@@ -135,9 +172,10 @@ namespace Server.Core {
             string str = System.Text.Encoding.UTF8.GetString(conn.readBuff, sizeof(Int32), conn.msgLength);
             Console.WriteLine("收到消息 [" + conn.GetAddress() + "] " + "数据包长度：" + conn.msgLength + sizeof(Int32) + "内容：" + str);
 
-            //处理消息
-            Send(conn, str);
-            //HandleMsg(conn, str)
+            //处理消息,HandleMsg(conn, str)
+            if (str == "HeartBeat")
+                conn.lastTickTime = Sys.GetTimeStamp();
+            //Send(conn, str);
 
             //处理下一条消息
             int count = conn.buffCount - conn.msgLength - sizeof(Int32);

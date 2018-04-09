@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assistant\Sys.cs" />
     <Compile Include="Core\Conn.cs" />
     <Compile Include="Core\DataMgr.cs" />
     <Compile Include="Core\ServNet.cs" />
