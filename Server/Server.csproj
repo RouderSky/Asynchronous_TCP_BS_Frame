@@ -43,8 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Conn.cs" />
     <Compile Include="Core\DataMgr.cs" />
+    <Compile Include="Core\ServNet.cs" />
     <Compile Include="Logic\PlayerData.cs" />
+    <Compile Include="Logic\PlayerTempData.cs" />
     <Compile Include="Middle\Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

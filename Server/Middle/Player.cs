@@ -11,5 +11,6 @@ namespace Server.Middle {
         public string id;
         //public Conn conn;		//Player中竟然也有Conn对象的引用
         public PlayerData data;
+        public PlayerTempData tempData;
     }
 }

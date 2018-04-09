@@ -11,6 +11,7 @@ using Server.Middle;
 namespace Server {
     class Program {
         static void Main(string[] args) {
+#if false
             DataMgr dataMgr = new DataMgr();
 
             //注册
@@ -62,6 +63,11 @@ namespace Server {
                 Console.WriteLine("读取玩家数据失败");
 
             Console.Read();
+#else
+            ServNet servNet = new ServNet();
+            servNet.Start("127.0.0.1", 1234);
+            Console.ReadLine();
+#endif
         }
     }
 }
