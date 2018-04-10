@@ -50,6 +50,9 @@
     <Compile Include="Core\ProtocolBytes.cs" />
     <Compile Include="Core\ProtocolStr.cs" />
     <Compile Include="Core\ServNet.cs" />
+    <Compile Include="Logic\HandleConnMsg.cs" />
+    <Compile Include="Logic\HandlePlayerEvent.cs" />
+    <Compile Include="Logic\HandlePlayerMsg.cs" />
     <Compile Include="Logic\PlayerData.cs" />
     <Compile Include="Logic\PlayerTempData.cs" />
     <Compile Include="Middle\Player.cs" />

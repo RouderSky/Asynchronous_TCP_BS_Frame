@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Server.Assistant;
+using Server.Logic;
 
 //读conn的时候不需要lock吗？其实是一个读写者问题
 //当前，要发送数据时，还是要手动new一个ProtoBytes，工厂不能new.............
@@ -33,6 +34,11 @@ namespace Server.Core {
         //协议处理
         //由用户启动服务器的时候设置
         public ProtocolBase proto;      //只是为了用来解码构造出一个协议信息，本身没有具体的消息
+
+        //消息分发
+        public HandleConnMsg handleConnMsg = new HandleConnMsg();
+        public HandlePlayerMsg handlePlayerMsg = new HandlePlayerMsg();
+        public HandlePlayerEvent handlePlayerEvent = new HandlePlayerEvent();
 
         public ServNet() {
             instance = this;        //这是单例模式？？？
@@ -165,16 +171,31 @@ namespace Server.Core {
 
         private void HandleMsg(Conn conn, ProtocolBase protoBase) {
             string name = protoBase.GetName();
-            Console.WriteLine("[收到协议]" + name);
+            string methodName = "Msg" + name;
 
-            //处理具体消息
-            //这里完全是双方用文字协定好解析信息的方法
-            if (name == "HeartBeat") {
-                Console.WriteLine("[更新心跳时间]" + conn.GetAddress());
-                conn.lastTickTime = Sys.GetTimeStamp();
+            if (conn.player == null || name == "HeartBeat" || name == "Logout") {
+                //连接相关的消息处理
+                MethodInfo mm = handleConnMsg.GetType().GetMethod(methodName);
+                if (mm == null) {
+                    Console.WriteLine("[警告]HandleConnMsg未定义处理连接相关的方法：" + methodName);
+                    return;
+                }
+                Object[] obj = new object[] { conn, protoBase };
+                Console.WriteLine("[处理连接相关消息]" + conn.GetAddress() + "发起的" + methodName);
+                mm.Invoke(handleConnMsg, obj);
+            }   
+            else {
+                //游戏逻辑相关的消息处理
+                MethodInfo mm = handlePlayerMsg.GetType().GetMethod(methodName);
+                if (mm == null) {
+                    Console.WriteLine("[警告]HandlePlayerMsg未定义处理游戏逻辑相关的方法：" + methodName);
+                    return;
+                }
+                Object[] obj = new object[] { conn, protoBase };
+                Console.WriteLine("[处理游戏逻辑相关消息]" + conn.GetAddress() + "发起的" + methodName);
+                mm.Invoke(handlePlayerMsg, obj);
             }
 
-            Send(conn, protoBase);      //为什么要传回去？应该仅做测试用
         }
         private void ProcessData(Conn conn) {
             if (conn.buffCount < sizeof(Int32))
@@ -236,6 +257,22 @@ namespace Server.Core {
                 lock (conn) {
                     conn.Close();
                 }
+            }
+        }
+
+        public void print() {
+            Console.WriteLine("===服务器登录信息===");
+            for (int i = 0; i < conns.Length; ++i) {
+                if (conns[i] == null)
+                    continue;
+                if (!conns[i].isUse)
+                    continue;
+
+                string str = "连接[" + conns[i].GetAddress() + "] ";
+                if (conns[i].player != null)
+                    str += "玩家id " + conns[i].player.id;
+
+                Console.WriteLine(str);
             }
         }
 

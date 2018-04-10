@@ -18,9 +18,12 @@ using Server.Assistant;
 //使用到conn的线程：主线程、异步Socket回调函数的线程、心跳的定时器线程
 //定时器回调函数也不在主线程
 //因此在处理conn时一般要上锁
+
+//加上一个获取当前连接状态的函数
+//加一个updateLastTickTime
 namespace Server.Core {
-    class Conn {
-        public const int BUFFER_SIZE = 1024;
+    public class Conn {
+        private const int BUFFER_SIZE = 1024;
 
         public Socket socket;
 
@@ -63,7 +66,7 @@ namespace Server.Core {
                 return;
             if (player != null) {
                 player.Logout();
-                return;         //就退出了？？？？？？？？
+                return;         //就退出了？因为Logout会再调用Close，恶心............
             }
             Console.WriteLine("[断开连接]" + GetAddress());
 
