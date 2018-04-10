@@ -14,14 +14,18 @@ namespace Server.Logic {
             protocolRet.AddString("GetScore");
             protocolRet.AddInt(player.data.score);
             player.Send(protocolRet);
-            Console.WriteLine("MsgGetScore " + player.id + player.data.score);
+            Console.WriteLine("MsgGetScore " + player.id + " " + player.data.score.ToString());
         }
 
         //增加分数
         //无参数
-        //无返回协议
+        //返回协议：0代表成功，-1代表失败
         public void MsgAddScore(Player player, ProtocolBase protoBase) {
             player.data.score += 1;
+
+            ProtocolBytes protocolRet = new ProtocolBytes();       //发送信息时竟然要手动new出指定的协议类型，不能由ServNet统一确定吗？？？
+            protocolRet.AddString("AddScore");
+            player.Send(protocolRet);
             Console.WriteLine("MsgAddScore " + player.id + " " + player.data.score.ToString());
         }
     }

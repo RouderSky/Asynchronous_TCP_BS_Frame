@@ -1,4 +1,6 @@
-﻿using System;
+﻿//origin
+
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections;
@@ -79,10 +81,10 @@ namespace Server.Core {
         }
         //启动服务器
         public void Start(string host, int port) {
-            //心跳处理用定时器
-            timer.Elapsed += new System.Timers.ElapsedEventHandler(HandleMainTimer);
-            timer.AutoReset = false;
-            timer.Enabled = true;       //这样可以启动定时器？和Start的功能完全一样？
+            //心跳处理用定时器，暂时关闭
+            //timer.Elapsed += new System.Timers.ElapsedEventHandler(HandleMainTimer);
+            //timer.AutoReset = false;
+            //timer.Enabled = true;       //这样可以启动定时器？和Start的功能完全一样？
 
             conns = new Conn[maxConn];
             for (int i = 0; i < maxConn; ++i) {
@@ -143,7 +145,7 @@ namespace Server.Core {
             Conn conn = (Conn)ar.AsyncState;
             lock (conn) {
                 try {
-                    //为什么服务器Close一个conn之后，还能进来一次这个函数，且这时socket已经不存在？
+                    //为什么服务器Close一个conn之后，还能进来一次这个函数，且这时socket已经不存在？观察发现主动发出Close的一方会接收到一次多余的信息
                     int count = conn.socket.EndReceive(ar);
 
                     if (count <= 0) {
@@ -191,7 +193,7 @@ namespace Server.Core {
                     Console.WriteLine("[警告]HandlePlayerMsg未定义处理游戏逻辑相关的方法：" + methodName);
                     return;
                 }
-                Object[] obj = new object[] { conn, protoBase };
+                Object[] obj = new object[] { conn.player, protoBase };
                 Console.WriteLine("[处理游戏逻辑相关消息]" + conn.GetAddress() + "发起的" + methodName);
                 mm.Invoke(handlePlayerMsg, obj);
             }
