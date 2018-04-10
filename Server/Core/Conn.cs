@@ -57,11 +57,12 @@ namespace Server.Core {
             return socket.RemoteEndPoint.ToString();
         }
 
+        //是不是在这里清一下player比较好？？
         public void Close() {
             if (!isUse)
                 return;
             if (player != null) {
-                //player.Logout();
+                player.Logout();
                 return;         //就退出了？？？？？？？？
             }
             Console.WriteLine("[断开连接]" + GetAddress());
@@ -71,8 +72,9 @@ namespace Server.Core {
             isUse = false;
         }
 
-        //public void Send(ProtocolBase protocol) {
-        //    ServNet.instance.Send(this, protocol);
-        //}
+        //这个方法有什么用，直接使用ServNet的Send不就好了？？？
+        public void Send(ProtocolBase protocol) {
+            ServNet.instance.Send(this, protocol);
+        }
     }
 }

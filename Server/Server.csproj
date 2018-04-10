@@ -46,6 +46,9 @@
     <Compile Include="Assistant\Sys.cs" />
     <Compile Include="Core\Conn.cs" />
     <Compile Include="Core\DataMgr.cs" />
+    <Compile Include="Core\ProtocolBase.cs" />
+    <Compile Include="Core\ProtocolBytes.cs" />
+    <Compile Include="Core\ProtocolStr.cs" />
     <Compile Include="Core\ServNet.cs" />
     <Compile Include="Logic\PlayerData.cs" />
     <Compile Include="Logic\PlayerTempData.cs" />

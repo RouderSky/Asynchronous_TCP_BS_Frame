@@ -1,12 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Server.Core {
-    //协议基类
-    public class ProtocolBase {
 
+    //协议基类
+    //既是工厂，也是具体对象
+    public class ProtocolBase {
+        //所有函数都应该写成纯虚函数
+
+        //工厂方法：构造出对应的协议信息，具体的协议信息不是通过一般的构造方法得到，而是通过这个函数
+        //我觉得这个方法应该作为静态方法
+        public virtual ProtocolBase Decode(byte[] readBuff, int start, int length) {
+            return new ProtocolBase();
+        }
+
+        public virtual byte[] Encode() {
+            return new byte[] { };
+        }
+
+        public virtual string GetName() {
+            return "";
+        }
+
+        public virtual string GetDesc() {
+            return "";
+        }
     }
 }

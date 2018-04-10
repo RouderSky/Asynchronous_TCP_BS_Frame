@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Server.Assistant;
 
 //读conn的时候不需要lock吗？其实是一个读写者问题
+//当前，要发送数据时，还是要手动new一个ProtoBytes，工厂不能new.............
 
 namespace Server.Core {
     class ServNet {
@@ -28,6 +29,10 @@ namespace Server.Core {
         //心跳处理
         System.Timers.Timer timer = new System.Timers.Timer(1000);      //检测用定时器
         public long heartBeatTime = 10;        //最大通信间隔，单位是秒，有客户端超过这个时间没有通信过就断开
+
+        //协议处理
+        //由用户启动服务器的时候设置
+        public ProtocolBase proto;      //只是为了用来解码构造出一个协议信息，本身没有具体的消息
 
         public ServNet() {
             instance = this;        //这是单例模式？？？
@@ -158,6 +163,19 @@ namespace Server.Core {
             }
         }
 
+        private void HandleMsg(Conn conn, ProtocolBase protoBase) {
+            string name = protoBase.GetName();
+            Console.WriteLine("[收到协议]" + name);
+
+            //处理具体消息
+            //这里完全是双方用文字协定好解析信息的方法
+            if (name == "HeartBeat") {
+                Console.WriteLine("[更新心跳时间]" + conn.GetAddress());
+                conn.lastTickTime = Sys.GetTimeStamp();
+            }
+
+            Send(conn, protoBase);      //为什么要传回去？应该仅做测试用
+        }
         private void ProcessData(Conn conn) {
             if (conn.buffCount < sizeof(Int32))
                 return;
@@ -168,14 +186,9 @@ namespace Server.Core {
             if (conn.buffCount < conn.msgLength + sizeof(Int32))
                 return;
 
-            //解析出真正的消息
-            string str = System.Text.Encoding.UTF8.GetString(conn.readBuff, sizeof(Int32), conn.msgLength);
-            Console.WriteLine("收到消息 [" + conn.GetAddress() + "] " + "数据包长度：" + conn.msgLength + sizeof(Int32) + "内容：" + str);
-
-            //处理消息,HandleMsg(conn, str)
-            if (str == "HeartBeat")
-                conn.lastTickTime = Sys.GetTimeStamp();
-            //Send(conn, str);
+            //处理消息
+            ProtocolBase protocol = proto.Decode(conn.readBuff, sizeof(Int32), conn.msgLength);
+            HandleMsg(conn, protocol);
 
             //处理下一条消息
             int count = conn.buffCount - conn.msgLength - sizeof(Int32);
@@ -185,8 +198,8 @@ namespace Server.Core {
                 ProcessData(conn);
         }
 
-        public void Send(Conn conn, string str) {
-            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(str);     //为什么这里发送用的是UTF8？到底什么时候该用什么格式
+        public void Send(Conn conn, ProtocolBase protocol) {
+            byte[] bytes = protocol.Encode();     //为什么这里发送用的是UTF8？到底什么时候该用什么格式
             byte[] length = BitConverter.GetBytes((Int32)bytes.Length);
             byte[] sendBuff = length.Concat(bytes).ToArray();           //为什么还要ToArray？
 
@@ -200,6 +213,16 @@ namespace Server.Core {
             }
             catch (Exception e) {
                 Console.WriteLine("[发送消息]" + conn.GetAddress() + " : " + e.Message);
+            }
+        }
+
+        public void Broadcast(ProtocolBase protocol) {
+            for (int i = 0; i < conns.Length; ++i) {
+                if (!conns[i].isUse)
+                    continue;
+                if (conns[i].player == null)    //怎么不判断conns[i]本身了？？？
+                    continue;
+                Send(conns[i], protocol);
             }
         }
 
