@@ -75,7 +75,7 @@ namespace Server.Core {
         }
         public void HandleMainTimer(object sender, System.Timers.ElapsedEventArgs e) {
             HeartBeat();
-            timer.Start();
+            timer.Start();      //为什么要这么做？？？
         }
         //启动服务器
         public void Start(string host, int port) {
