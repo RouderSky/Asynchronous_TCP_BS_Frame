@@ -12,7 +12,8 @@ namespace Server.Core {
 
         public override ProtocolBase Decode(byte[] readBuff, int start, int length) {
             ProtocolStr protocol = new ProtocolStr();
-            protocol.str = System.Text.Encoding.UTF8.GetString(readBuff, start, length);
+            if(readBuff != null)
+                protocol.str = System.Text.Encoding.UTF8.GetString(readBuff, start, length);
             return (ProtocolBase)protocol;
         }
 

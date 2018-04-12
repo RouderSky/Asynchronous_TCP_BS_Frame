@@ -8,8 +8,9 @@ namespace Server.Core {
 
         public override ProtocolBase Decode(byte[] readBuff, int start, int length) {
             ProtocolBytes protocol = new ProtocolBytes();
-            protocol.bytes = new byte[length];
-            Array.Copy(readBuff, start, protocol.bytes, 0, length);
+            if(readBuff != null)
+                protocol.bytes = new byte[length];
+                Array.Copy(readBuff, start, protocol.bytes, 0, length);
             return protocol;
         }
 

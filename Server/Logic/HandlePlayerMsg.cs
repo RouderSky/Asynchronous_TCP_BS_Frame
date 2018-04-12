@@ -19,7 +19,7 @@ namespace Server.Logic {
 
         //增加分数
         //无参数
-        //返回协议：0代表成功，-1代表失败
+        //返回协议：无
         public void MsgAddScore(Player player, ProtocolBase protoBase) {
             player.data.score += 1;
 

@@ -1,6 +1,4 @@
-﻿//origin
-
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections;
@@ -31,7 +29,7 @@ namespace Server.Core {
 
         //心跳处理
         System.Timers.Timer timer = new System.Timers.Timer(1000);      //检测用定时器
-        public long heartBeatTime = 10;        //最大通信间隔，单位是秒，有客户端超过这个时间没有通信过就断开
+        public long heartBeatTime = 50;        //最大通信间隔，单位是秒，有客户端超过这个时间没有通信过就断开
 
         //协议处理
         //由用户启动服务器的时候设置
@@ -58,7 +56,7 @@ namespace Server.Core {
         }
 
         public void HeartBeat() {
-            Console.WriteLine("[主定时器执行]");
+            //Console.WriteLine("[主定时器执行]");
             long timeNow = Sys.GetTimeStamp();
 
             for (int i = 0; i < conns.Length; ++i) {
@@ -82,9 +80,9 @@ namespace Server.Core {
         //启动服务器
         public void Start(string host, int port) {
             //心跳处理用定时器，暂时关闭
-            //timer.Elapsed += new System.Timers.ElapsedEventHandler(HandleMainTimer);
-            //timer.AutoReset = false;
-            //timer.Enabled = true;       //这样可以启动定时器？和Start的功能完全一样？
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(HandleMainTimer);
+            timer.AutoReset = false;
+            timer.Enabled = true;       //这样可以启动定时器？和Start的功能完全一样？
 
             conns = new Conn[maxConn];
             for (int i = 0; i < maxConn; ++i) {
@@ -154,7 +152,7 @@ namespace Server.Core {
                         return;
                     }
 
-                    conn.buffCount += count;    //不用担心缓冲区不够长吗？？？
+                    conn.buffCount += count;
                     ProcessData(conn);
 
                     conn.socket.BeginReceive(conn.readBuff,
