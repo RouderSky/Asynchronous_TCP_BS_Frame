@@ -11,6 +11,7 @@ using Server.Core;
 namespace Server.Middle {
     public class Player {
         public string id;
+
         public Conn conn;		//Player中竟然也有Conn对象的引用；这个应该可以设置成私有的......
         public PlayerData data;
         public PlayerTempData tempData;

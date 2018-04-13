@@ -15,6 +15,7 @@ namespace Server {
 
         List<Avatar> list = new List<Avatar>();     //能不能用字典？
 
+        //不广播，为什么？？？
         public void AddAvatar(string id) {
             lock (list) {
                 Avatar avatar = new Avatar();
@@ -31,6 +32,7 @@ namespace Server {
             return null;
         }
 
+        //广播
         public void DelAvatar(string id) {
             lock (list) {
                 Avatar avatar = GetAvatar(id);
@@ -38,13 +40,13 @@ namespace Server {
                     list.Remove(avatar);
             }
 
-            //为什么这里突然要广播下，AddAvatar和UpdateInfo都没有广播，这个设计怎么不对称的.............
             ProtocolBytes protocol = new ProtocolBytes();   //.................
             protocol.AddString("PlayerLeave");
             protocol.AddString(id);
             ServNet.instance.Broadcast(protocol);
         }
 
+        //在调用时广播
         public void UpdateInfo(string id, float x, float y, float z, int score) {
             Avatar avatar = GetAvatar(id);
             if (avatar == null)
