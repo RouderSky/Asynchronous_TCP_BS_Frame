@@ -100,13 +100,7 @@ namespace Server.Logic {
         //协议参数：无
         //返回协议：无
         public void MsgLogout(Conn conn, ProtocolBase protoBase) {
-            if (conn.player == null) {
-                conn.Close();
-            }
-            else {
-                conn.player.Logout();
-            }
+            conn.Close();
         }
-
     }
 }
