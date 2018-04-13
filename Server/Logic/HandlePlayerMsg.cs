@@ -25,9 +25,11 @@ namespace Server.Logic {
             player.data.score += 1;
 
             ProtocolBytes protocolRet = new ProtocolBytes();       //发送信息时竟然要手动new出指定的协议类型，不能由ServNet统一确定吗？？？
-            protocolRet.AddString("AddScore");
-            player.Send(protocolRet);
             Console.WriteLine("MsgAddScore " + player.id + " " + player.data.score.ToString());
+        }
+
+        public void MsgGetList(Player player, ProtocolBase proto) {
+            Scene.instance.SendAvatarList(player);
         }
     }
 }

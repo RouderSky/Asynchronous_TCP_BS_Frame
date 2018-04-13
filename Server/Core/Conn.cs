@@ -61,7 +61,6 @@ namespace Server.Core {
             return socket.RemoteEndPoint.ToString();
         }
 
-        //是不是在这里清一下player比较好？？
         public void Close() {
             if (!isUse)
                 return;

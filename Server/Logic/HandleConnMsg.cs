@@ -11,7 +11,7 @@ namespace Server.Logic {
         //心跳
         //协议参数：无
         //返回协议：无
-        public void MsgHeartBeat(Conn conn, ProtocolBase protoBase) {
+        public void MsgHeartBeat(Conn conn, ProtocolBase proto) {
             conn.lastTickTime = Sys.GetTimeStamp();
             Console.WriteLine("[更新心跳时间]" + conn.GetAddress());
         }
@@ -20,11 +20,11 @@ namespace Server.Logic {
         //协议参数：用户名，密码
         //返回协议：-1代表失败，0代表成功
 
-        public void MsgRegister(Conn conn, ProtocolBase protoBsse) {
+        public void MsgRegister(Conn conn, ProtocolBase proto) {
             
             //解析出所有参数
             int start = 0;
-            ProtocolBytes protocol = (ProtocolBytes)protoBsse;          //不转不行吗？？？
+            ProtocolBytes protocol = (ProtocolBytes)proto;          //不转不行吗？？？
             string protoName = protocol.GetString(start, ref start);
             string id = protocol.GetString(start, ref start);
             string pw = protocol.GetString(start, ref start);
@@ -49,10 +49,10 @@ namespace Server.Logic {
         //登录
         //协议参数：用户名，密码
         //返回协议：-1密码错误，-2顶下线失败，-3读取角色数据失败，0成功
-        public void MsgLogin(Conn conn, ProtocolBase protoBase) {
+        public void MsgLogin(Conn conn, ProtocolBase proto) {
             //解析出所有参数
             int start = 0;
-            ProtocolBytes protocol = (ProtocolBytes)protoBase;      //不转不行吗？？？
+            ProtocolBytes protocol = (ProtocolBytes)proto;      //不转不行吗？？？
             string protoName = protocol.GetString(start, ref start);
             string id = protocol.GetString(start, ref start);
             string pw = protocol.GetString(start, ref start);
@@ -99,8 +99,10 @@ namespace Server.Logic {
         //登出
         //协议参数：无
         //返回协议：无
-        public void MsgLogout(Conn conn, ProtocolBase protoBase) {
+        public void MsgLogout(Conn conn, ProtocolBase proto) {
             conn.Close();
         }
+
+
     }
 }
