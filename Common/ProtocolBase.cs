@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Server.Core {
+namespace Common {
 
     //需要将AddString、AddInt、AddFloat都作为虚函数..............................
 

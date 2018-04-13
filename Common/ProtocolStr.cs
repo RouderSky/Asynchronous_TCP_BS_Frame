@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
-
-namespace Server.Core {
+namespace Common {
     public class ProtocolStr : ProtocolBase {
         public string str;
 

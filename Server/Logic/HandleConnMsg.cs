@@ -1,5 +1,6 @@
 ﻿using System;
 
+using Common;
 using Server.Core;
 using Server.Middle;
 using Server.Assistant;
@@ -9,6 +10,7 @@ namespace Server.Logic {
     public partial class HandleConnMsg {
         //心跳
         //协议参数：无
+        //返回协议：无
         public void MsgHeartBeat(Conn conn, ProtocolBase protoBase) {
             conn.lastTickTime = Sys.GetTimeStamp();
             Console.WriteLine("[更新心跳时间]" + conn.GetAddress());
@@ -46,8 +48,8 @@ namespace Server.Logic {
 
         //登录
         //协议参数：用户名，密码
-        //返回协议：-1代表失败，0代表成功
-        public void MsgLogin(Conn conn, ProtocolBase protoBsse) {
+        //返回协议：-1密码错误，-2顶下线失败，-3读取角色数据失败，0成功
+        public void MsgLogin(Conn conn, ProtocolBase protoBase) {
             //解析出所有参数
             int start = 0;
             ProtocolBytes protocol = (ProtocolBytes)protoBase;      //不转不行吗？？？
@@ -68,10 +70,11 @@ namespace Server.Logic {
 
             //检查是否已经登录了
             ProtocolBytes protocolLogout = new ProtocolBytes();
-            protocolLogout.AddString("Logout");     //这里不带参数？？？MsgLogout带了
+            protocolLogout.AddString("Logout");
+            protocolLogout.AddInt(0);               //加了参数
             ret = Player.KickOff(id, protocolLogout);
             if (!ret) {
-                protocol.AddInt(-1);
+                protocol.AddInt(-2);
                 conn.Send(protocol);
                 return;
             }
@@ -79,7 +82,7 @@ namespace Server.Logic {
             //获取玩家数据
             PlayerData playerData = DataMgr.instance.GetPlayerData(id);
             if (playerData == null) {
-                protocol.AddInt(-1);
+                protocol.AddInt(-3);
                 conn.Send(protocol);
                 return;
             }
@@ -93,11 +96,10 @@ namespace Server.Logic {
             conn.Send(protocol);
         }
 
+        //登出
+        //协议参数：无
+        //返回协议：无
         public void MsgLogout(Conn conn, ProtocolBase protoBase) {
-            ProtocolBytes protocol = new ProtocolBytes();       //发送信息时竟然要手动new出指定的协议类型，不能由ServNet统一确定吗？？？
-            protocol.AddString("Logout");
-            protocol.AddInt(0);     //可以带参数？？？MsgLogin没带
-            conn.Send(protocol);
             if (conn.player == null) {
                 conn.Close();
             }

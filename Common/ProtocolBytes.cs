@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Linq;
 
-namespace Server.Core {
-    class ProtocolBytes : ProtocolBase{
+namespace Common {
+    public class ProtocolBytes : ProtocolBase{
         public byte[] bytes;
 
         public override ProtocolBase Decode(byte[] readBuff, int start, int length) {
