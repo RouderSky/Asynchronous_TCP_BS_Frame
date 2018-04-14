@@ -34,7 +34,7 @@ namespace Common {
             return str;
         }
 
-        public void AddString(string str) {
+        public override void AddString(string str) {
             Int32 len = str.Length;     //为何突然使用Int32？？？
             byte[] lenBytes = BitConverter.GetBytes(len);
             byte[] strBytes = System.Text.Encoding.UTF8.GetBytes(str);  //send不是要用Default吗？
@@ -46,7 +46,7 @@ namespace Common {
         }
 
         //ref是的值类型按引用传递，out呢？？？？
-        public string GetString(int start, ref int end) {
+        public override string GetString(int start, ref int end) {
             if (bytes == null)      //不是用Decode获得的对象才会有这种情况出现
                 return "";
             if (bytes.Length < start + sizeof(Int32))
@@ -59,12 +59,7 @@ namespace Common {
             return str;
         }
 
-        public string GetString(int start) {
-            int end = 0;
-            return GetString(start, ref end);
-        }
-
-        public void AddInt(int num) {
+        public override void AddInt(int num) {
             byte[] numBytes = BitConverter.GetBytes(num);
             if (bytes == null)
                 bytes = numBytes;
@@ -72,7 +67,7 @@ namespace Common {
                 bytes = bytes.Concat(numBytes).ToArray();
         }
 
-        public int GetInt(int start, ref int end) {
+        public override int GetInt(int start, ref int end) {
             if (bytes == null)
                 return 0;
             if (bytes.Length < start + sizeof(Int32))
@@ -82,12 +77,7 @@ namespace Common {
             return BitConverter.ToInt32(bytes, start);
         }
 
-        public int GetInt(int start) {
-            int end = 0;
-            return GetInt(start, ref end);
-        }
-
-        public void AddFloat(float num) {
+        public override void AddFloat(float num) {
             byte[] numBytes = BitConverter.GetBytes(num);
             if (bytes == null)
                 bytes = numBytes;
@@ -95,7 +85,7 @@ namespace Common {
                 bytes = bytes.Concat(numBytes).ToArray();
         }
 
-        public float GetFloat(int start, ref int end) {
+        public override float GetFloat(int start, ref int end) {
             if (bytes == null)
                 return 0;
             if (bytes.Length < start + sizeof(float))
@@ -103,11 +93,6 @@ namespace Common {
 
             end = start + sizeof(float);
             return BitConverter.ToSingle(bytes, start);
-        }
-
-        public float GetFloat(int start) {
-            int end = 0;
-            return GetFloat(start, ref end);
         }
     }
 }

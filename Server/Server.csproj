@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assistant\Sys.cs" />
-    <Compile Include="Avatar.cs" />
+    <Compile Include="Logic\Avatar.cs" />
     <Compile Include="Core\Conn.cs" />
     <Compile Include="Core\DataMgr.cs" />
     <Compile Include="Core\ServNet.cs" />
@@ -56,7 +56,7 @@
     <Compile Include="Middle\Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Scene.cs" />
+    <Compile Include="Logic\Scene.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

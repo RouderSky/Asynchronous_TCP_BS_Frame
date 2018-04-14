@@ -65,6 +65,7 @@ namespace Server {
 
             Console.Read();
 #else
+            Scene scene = new Scene();
             DataMgr dataMgr = new DataMgr();
             ServNet servNet = new ServNet();
             servNet.proto = new ProtocolBytes();
