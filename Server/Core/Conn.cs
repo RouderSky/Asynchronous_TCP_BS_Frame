@@ -41,7 +41,7 @@ namespace Server.Core {
         public Player player;
 
         public Conn() {
-            readBuff = new byte[BUFFER_SIZE];       //不需要再new一次
+            //readBuff = new byte[BUFFER_SIZE];       //不需要再new一次
         }
 
         public void Init(Socket socket) {
@@ -65,8 +65,14 @@ namespace Server.Core {
             if (!isUse)
                 return;
             if (player != null) {
+                /*
                 player.Logout();
-                return;         //就退出了？因为Logout会再调用Close，恶心............
+                return;         //就退出了？因为Logout会再调用Close
+                */
+                if (!player.Logout()) {
+                    Console.WriteLine("玩家数据保存失败，无法关闭连接");
+                    return;
+                }
             }
             Console.WriteLine("[断开连接]" + GetAddress());
 
@@ -75,7 +81,6 @@ namespace Server.Core {
             isUse = false;
         }
 
-        //这个方法有什么用，直接使用ServNet的Send不就好了？？？
         public void Send(ProtocolBase protocol) {
             ServNet.instance.Send(this, protocol);
         }

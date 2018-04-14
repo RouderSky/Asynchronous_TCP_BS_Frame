@@ -70,8 +70,7 @@ namespace Server.Logic {
 
             //检查是否已经登录了
             ProtocolBytes protocolLogout = new ProtocolBytes();
-            protocolLogout.AddString("Logout");
-            protocolLogout.AddInt(0);               //加了参数
+            protocolLogout.AddString("ForceLogout");
             ret = Player.KickOff(id, protocolLogout);
             if (!ret) {
                 protocol.AddInt(-2);

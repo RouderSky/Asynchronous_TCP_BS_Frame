@@ -12,7 +12,7 @@ namespace Server.Middle {
     public class Player {
         public string id;       //用户名
 
-        public Conn conn;		//Player中竟然也有Conn对象的引用；这个应该可以设置成私有的......
+        private Conn conn;		//Player中竟然也有Conn对象的引用；这个应该可以设置成私有的......
         public PlayerData data;
         public PlayerTempData tempData;
 
@@ -43,8 +43,12 @@ namespace Server.Middle {
                     lock(conns[i].player){
                         if(proto != null)
                             conns[i].player.Send(proto);
-
-                        return conns[i].player.Logout();
+                        if (conns[i].player.Logout())
+                            return true;
+                        else {
+                            Console.WriteLine("保存玩家数据失败，无法踢下线");
+                            return false;
+                        }
                     }
                 }
             }
@@ -58,7 +62,7 @@ namespace Server.Middle {
                 return false;
 
             conn.player = null;
-            conn.Close();           //还是不要这样调用比较好，很恶心.......
+            //conn.Close();           //还是不要这样调用比较好，很恶心
 
             return true;
         }
