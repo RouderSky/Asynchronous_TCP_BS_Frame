@@ -17,7 +17,6 @@ using Server.Assistant;
 using Server.Logic;
 
 //读conn的时候不需要lock吗？其实是一个读写者问题
-//当前，要发送数据时，还是要手动new一个ProtoBytes，工厂不能new.............
 
 namespace Server.Core {
     class ServNet {
@@ -45,17 +44,6 @@ namespace Server.Core {
             instance = this;        //这是单例模式？？？
         }
 
-        public int NewIndex() {
-            if (conns == null)
-                return -1;
-            for (int i = 0; i < conns.Length; ++i) {
-                if (conns[i].isUse == false) {      //从这里可以看出，当前线程并不安全；有可能两个客户端取到相同的index，也就是说有一个客户端会逻辑上连接失败
-                    return i;
-                }
-            }
-            return -1;
-        }
-
         public void HeartBeat() {
             //Console.WriteLine("[主定时器执行]");
             long timeNow = Sys.GetTimeStamp();
@@ -76,7 +64,7 @@ namespace Server.Core {
         }
         public void HandleMainTimer(object sender, System.Timers.ElapsedEventArgs e) {
             HeartBeat();
-            timer.Start();      //为什么要这么做？？？
+            timer.Start();      //这么做是确保上一次检测已经完成再开始下一次？？？
         }
         //启动服务器
         public void Start(string host, int port) {
@@ -112,28 +100,29 @@ namespace Server.Core {
             try {
                 Socket socket = listenfd.EndAccept(ar);
 
-                int index = NewIndex();
+                for (int i = 0; i < conns.Length; ++i) {
+                    lock (conns[i]) {
+                        if (conns[i].isUse == false) {
+                            Conn conn = conns[i];
+                            conn.Init(socket);          //其实在这里就可以释放临界区了
+                            string adr = conn.GetAddress();
+                            Console.WriteLine("客户端连接 [" + adr + "] conn池ID：" + i);
 
-                if (index < 0) {
-                    socket.Close();
-                    Console.WriteLine("[警告]连接已满");
+                            conn.socket.BeginReceive(conn.readBuff,
+                                                     conn.buffCount,
+                                                     conn.BuffRemain(),
+                                                     SocketFlags.None,
+                                                     ReceiveCb,
+                                                     conn);
+
+                            //继续接收客户端连接
+                            listenfd.BeginAccept(AcceptCb, null);
+
+                            return;
+                        }
+                    }
                 }
-                else {
-                    Conn conn = conns[index];
-                    conn.Init(socket);
-                    string adr = conn.GetAddress();
-                    Console.WriteLine("客户端连接 [" + adr + "] conn池ID：" + index);
 
-                    conn.socket.BeginReceive(conn.readBuff,
-                                             conn.buffCount,
-                                             conn.BuffRemain(),
-                                             SocketFlags.None,
-                                             ReceiveCb,
-                                             conn);
-
-                    //继续接收客户端连接
-                    listenfd.BeginAccept(AcceptCb, null);
-                }
             }
             catch (Exception e) {
                 Console.WriteLine("AcceptCb失败：" + e.Message);
@@ -238,6 +227,7 @@ namespace Server.Core {
             }
         }
 
+        //对玩家进行广播
         public void Broadcast(ProtocolBase protocol) {
             for (int i = 0; i < conns.Length; ++i) {
                 if (!conns[i].isUse)
@@ -276,6 +266,5 @@ namespace Server.Core {
                 Console.WriteLine(str);
             }
         }
-
     }
 }
