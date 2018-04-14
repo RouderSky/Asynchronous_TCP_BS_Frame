@@ -86,8 +86,9 @@ namespace Server.Logic {
                 conn.Send(protocol);
                 return;
             }
-            conn.player = new Player(id, conn);
-            conn.player.data = playerData;
+
+            Player player = new Player(id, conn);
+            conn.Login(player, playerData);
 
             //事件
             ServNet.instance.handlePlayerEvent.OnLogin(conn.player);
@@ -98,11 +99,21 @@ namespace Server.Logic {
 
         //登出
         //协议参数：无
-        //返回协议：无
+        //返回协议：0代表成功，-1代表失败, -2代表瞎搞
         public void MsgLogout(Conn conn, ProtocolBase protocol) {
-            conn.Close();
+            ProtocolBase protocolLogout = ServNet.instance.proto.Decode(null, 0, 0);
+            protocolLogout.AddString("Logout");
+            if (conn.status == Conn.Status.Login) {
+                if (conn.player.Logout())
+                    protocolLogout.AddInt(0);
+                else
+                    protocolLogout.AddInt(-1);
+            }
+            else {
+                protocolLogout.AddInt(-2);
+            }
+            conn.Send(protocolLogout);
         }
-
 
     }
 }

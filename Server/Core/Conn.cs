@@ -15,6 +15,7 @@ using System.Threading;
 using Common;
 using Server.Middle;
 using Server.Assistant;
+using Server.Logic;
 
 //使用到conn的线程：主线程、异步Socket回调函数的线程、心跳的定时器线程
 //定时器回调函数也不在主线程
@@ -28,7 +29,7 @@ namespace Server.Core {
 
         public Socket socket;
 
-        public bool isUse = false;
+        //public bool isUse = false;
 
         public byte[] readBuff = new byte[BUFFER_SIZE];
         public int buffCount = 0;
@@ -39,6 +40,13 @@ namespace Server.Core {
         public long lastTickTime = long.MinValue;   //该连接上一次通信时间
 
         public Player player;
+        public enum Status {
+            None,
+            Connected,
+            Login
+        };
+
+        public Status status = Status.None;
 
         public Conn() {
             //readBuff = new byte[BUFFER_SIZE];       //不需要再new一次
@@ -46,9 +54,16 @@ namespace Server.Core {
 
         public void Init(Socket socket) {
             this.socket = socket;
-            isUse = true;
+            //isUse = true;
             buffCount = 0;
-            lastTickTime = Sys.GetTimeStamp(); 
+            lastTickTime = Sys.GetTimeStamp();
+            status = Status.Connected;
+        }
+
+        public void Login(Player player, PlayerData playerData){
+            status = Status.Login;
+            this.player = player;
+            this.player.data = playerData;
         }
 
         public int BuffRemain() {
@@ -56,15 +71,15 @@ namespace Server.Core {
         }
 
         public string GetAddress() {
-            if (!isUse)
+            if (status == Status.None)
                 return "无法获取地址";
             return socket.RemoteEndPoint.ToString();
         }
 
         public void Close() {
-            if (!isUse)
+            if (status == Status.None)
                 return;
-            if (player != null) {
+            if (status == Status.Login) {
                 /*
                 player.Logout();
                 return;         //就退出了？因为Logout会再调用Close
@@ -73,12 +88,13 @@ namespace Server.Core {
                     Console.WriteLine("玩家数据保存失败，无法关闭连接");
                     return;
                 }
+                status = Status.Connected;
             }
             Console.WriteLine("[断开连接]" + GetAddress());
 
             socket.Shutdown(SocketShutdown.Both);       //？？？
             socket.Close();
-            isUse = false;
+            status = Status.None;
         }
 
         public void Send(ProtocolBase protocol) {

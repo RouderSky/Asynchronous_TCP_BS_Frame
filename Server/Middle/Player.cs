@@ -35,9 +35,9 @@ namespace Server.Middle {
             for(int i=0;i<conns.Length;++i){
                 //if (conns[i] == null)        //没必要
                 //    continue;
-                if(!conns[i].isUse)
+                if(conns[i].status == Conn.Status.None)
                     continue;
-                if(conns[i].player == null)
+                if(conns[i].status == Conn.Status.Connected)
                     continue;
                 if(conns[i].player.id == id){
                     lock(conns[i].player){
@@ -62,6 +62,7 @@ namespace Server.Middle {
                 return false;
 
             conn.player = null;
+            conn.status = Conn.Status.Connected;
             //conn.Close();           //还是不要这样调用比较好，很恶心
 
             return true;

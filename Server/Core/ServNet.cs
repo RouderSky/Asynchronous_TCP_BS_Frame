@@ -52,7 +52,7 @@ namespace Server.Core {
                 Conn conn = conns[i];
                 //if (conn == null)       //不可能
                     //continue;
-                if (!conn.isUse)
+                if (conn.status == Conn.Status.None)
                     continue;
 
                 if (timeNow - conn.lastTickTime > heartBeatTime) {
@@ -102,7 +102,7 @@ namespace Server.Core {
 
                 for (int i = 0; i < conns.Length; ++i) {
                     lock (conns[i]) {
-                        if (conns[i].isUse == false) {
+                        if (conns[i].status == Conn.Status.None) {
                             Conn conn = conns[i];
                             conn.Init(socket);
                             //其实在这里就可以释放临界区了
@@ -164,8 +164,8 @@ namespace Server.Core {
             string name = protoBase.GetName();
             string methodName = "Msg" + name;
 
-            if (conn.player == null || name == "HeartBeat" || name == "Logout") {
-                //连接相关的消息处理
+            if (conn.status == Conn.Status.Connected || name == "HeartBeat" || name == "Logout") {
+                //登录相关的消息处理
                 MethodInfo mm = handleConnMsg.GetType().GetMethod(methodName);
                 if (mm == null) {
                     Console.WriteLine("[警告]HandleConnMsg未定义处理连接相关的方法：" + methodName);
@@ -231,9 +231,9 @@ namespace Server.Core {
         //对玩家进行广播
         public void Broadcast(ProtocolBase protocol) {
             for (int i = 0; i < conns.Length; ++i) {
-                if (!conns[i].isUse)
+                if (conns[i].status == Conn.Status.None)
                     continue;
-                if (conns[i].player == null)
+                if (conns[i].status == Conn.Status.Connected)
                     continue;
                 Send(conns[i], protocol);
             }
@@ -244,7 +244,7 @@ namespace Server.Core {
                 Conn conn = conns[i];
                 //if (conn == null)
                     //continue;
-                if (!conn.isUse)
+                if (conn.status == Conn.Status.None)
                     continue;
                 lock (conn) {
                     conn.Close();
@@ -257,11 +257,11 @@ namespace Server.Core {
             for (int i = 0; i < conns.Length; ++i) {
                 //if (conns[i] == null)
                     //continue;
-                if (!conns[i].isUse)
+                if (conns[i].status == Conn.Status.None)
                     continue;
 
                 string str = "连接[" + conns[i].GetAddress() + "] ";
-                if (conns[i].player != null)
+                if (conns[i].status == Conn.Status.Login)
                     str += "玩家id " + conns[i].player.id;
 
                 Console.WriteLine(str);
