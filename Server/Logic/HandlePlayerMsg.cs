@@ -11,7 +11,7 @@ namespace Server.Logic {
         //无参数
         //返回协议：int分数
         public void MsgGetScore(Player player, ProtocolBase protocol) {
-            ProtocolBytes protocolRet = new ProtocolBytes();       //发送信息时竟然要手动new出指定的协议类型，不能由ServNet统一确定吗？？？
+            ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
             protocolRet.AddString("GetScore");
             protocolRet.AddInt(player.data.score);
             player.Send(protocolRet);
@@ -24,7 +24,7 @@ namespace Server.Logic {
         public void MsgAddScore(Player player, ProtocolBase protocol) {
             player.data.score += 1;
 
-            ProtocolBytes protocolRet = new ProtocolBytes();       //发送信息时竟然要手动new出指定的协议类型，不能由ServNet统一确定吗？？？
+            ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
             Console.WriteLine("MsgAddScore " + player.id + " " + player.data.score.ToString());
         }
 
@@ -48,7 +48,7 @@ namespace Server.Logic {
             Scene.instance.UpdateInfo(player.id, x, y, z, score);
 
             //广播，这段代码我觉得放进Scene.instance.UpdateInfo会好点..........
-            ProtocolBytes protocolRet = new ProtocolBytes();        //...............
+            ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
             protocolRet.AddString("UpdateInfo");
             protocolRet.AddString(player.id);
             protocolRet.AddFloat(x);

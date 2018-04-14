@@ -33,7 +33,7 @@ namespace Server.Logic {
             bool ret = DataMgr.instance.Register(id, pw);
 
             //通知客户端注册结果
-            protocol = new ProtocolBytes();     //发送信息时竟然要手动new出指定的协议类型，不能由ServNet统一确定吗？？？
+            protocol = ServNet.instance.proto.Decode(null, 0, 0);
             protocol.AddString("Register");
             if (ret)
                 protocol.AddInt(0);
@@ -61,7 +61,7 @@ namespace Server.Logic {
 
             //检查密码
             bool ret = DataMgr.instance.CheckPassWord(id, pw);
-            protocol = new ProtocolBytes();         //发送信息时竟然要手动new出指定的协议类型，不能由ServNet统一确定吗？？？
+            protocol = ServNet.instance.proto.Decode(null, 0, 0);        //发送信息时竟然要手动new出指定的协议类型，不能由ServNet统一确定吗？？？
             protocol.AddString("Login");
             if (!ret) {
                 protocol.AddInt(-1);
@@ -70,7 +70,7 @@ namespace Server.Logic {
             }
 
             //检查是否已经登录了
-            ProtocolBytes protocolLogout = new ProtocolBytes();
+            ProtocolBase protocolLogout = ServNet.instance.proto.Decode(null, 0, 0);
             protocolLogout.AddString("ForceLogout");
             ret = Player.KickOff(id, protocolLogout);
             if (!ret) {

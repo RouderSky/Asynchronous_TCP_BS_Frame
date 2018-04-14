@@ -40,7 +40,7 @@ namespace Server {
                     list.Remove(avatar);
             }
 
-            ProtocolBytes protocol = new ProtocolBytes();   //.................
+            ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
             protocol.AddString("PlayerLeave");
             protocol.AddString(id);
             ServNet.instance.Broadcast(protocol);
@@ -59,7 +59,7 @@ namespace Server {
 
         public void SendAvatarList(Player player) {
             int count = list.Count;
-            ProtocolBytes protocol = new ProtocolBytes();   //.................
+            ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
             protocol.AddString("GetList");
             protocol.AddInt(count);
             for (int i = 0; i < count; ++i) {
