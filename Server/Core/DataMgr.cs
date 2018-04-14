@@ -16,13 +16,13 @@ using Server.Logic;
 using Server.Middle;
 
 namespace Server.Core {
+    //要求单例模式......................
     public class DataMgr {
         MySqlConnection sqlConn;
 
-        //单例模式
         public static DataMgr instance;
         public DataMgr() {
-            instance = this;	//为什么这样就实现了单例模式？
+            instance = this;
             Connect();
         }
 
@@ -41,7 +41,11 @@ namespace Server.Core {
         //防止sql注入
         //在执行用户名或者密码相关的数据库操作时，都要检查
         public bool IsSafeStr(string str) {
-            return !Regex.IsMatch(str, @"[-];|,|\/|\(|\)|\[|\]|\{|\}|%|@|\*|!|\`");	//有点看不懂这个字符串
+            bool isSafe = !Regex.IsMatch(str, @"[-|;|,|\/|\(|\)|\[|\]|\{|\}|%|@|\*|!|\`]");     //有点看不懂这个字符串
+            if (!isSafe) {
+                Console.WriteLine("[DataMgr]IsSafeStr 使用非法字符");
+            }
+            return isSafe;
         }
 
         //检查数据库中是否已经有同样的id
@@ -58,14 +62,13 @@ namespace Server.Core {
                 return !hasRows;
             }
             catch (Exception e) {
-                Console.WriteLine("[DataMgr]CanRegister fail + e.Message");
+                Console.WriteLine("[DataMgr]CanRegister fail" + e.Message);
                 return false;
             }
         }
 
         public bool Register(string id, string pw) {
             if (!IsSafeStr(id) || !IsSafeStr(pw)) {
-                Console.WriteLine("[DataMgr]Register 使用非法字符 ");
                 return false;
             }
             if (!CanRegister(id)) {
@@ -184,7 +187,10 @@ namespace Server.Core {
         }
 
         public bool SavePlayer(Player player) {
-            string id = player.id;          //不用检查下这个id？？？
+            string id = player.id;
+            if (!IsSafeStr(id)) {
+                return false;
+            }
             PlayerData playerData = player.data;
 
             //序列化字节数组

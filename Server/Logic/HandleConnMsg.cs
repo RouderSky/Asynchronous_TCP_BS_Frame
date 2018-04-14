@@ -41,9 +41,10 @@ namespace Server.Logic {
                 protocol.AddInt(-1);
             conn.Send(protocol);
 
-            //创建角色
-            DataMgr.instance.CreatePlayer(id);      //不用这么急着创建角色吧？？？
-
+            //创建角色:一个账号对应一个角色的模式
+            if (ret) {
+                DataMgr.instance.CreatePlayer(id);
+            }
         }
 
         //登录
