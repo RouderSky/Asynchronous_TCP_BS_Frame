@@ -31,7 +31,7 @@ namespace Server {
             }
 
             ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
-            protocol.AddString("PlayerLeave");
+            protocol.AddString("AvatarLeave");
             protocol.AddString(id);
             ServNet.instance.Broadcast(protocol);
         }
