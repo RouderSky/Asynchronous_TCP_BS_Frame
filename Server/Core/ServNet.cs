@@ -16,9 +16,9 @@ using Common;
 using Server.Assistant;
 using Server.Logic;
 
-//读conn的时候不需要lock吗？其实是一个读写者问题
-
 namespace Server.Core {
+
+    //要求单例.......................
     class ServNet {
         public Socket listenfd;
 
@@ -41,7 +41,7 @@ namespace Server.Core {
         public HandlePlayerEvent handlePlayerEvent = new HandlePlayerEvent();
 
         public ServNet() {
-            instance = this;        //这是单例模式？？？
+            instance = this;
         }
 
         public void HeartBeat() {
@@ -50,8 +50,8 @@ namespace Server.Core {
 
             for (int i = 0; i < conns.Length; ++i) {
                 Conn conn = conns[i];
-                if (conn == null)       //不可能
-                    continue;
+                //if (conn == null)       //不可能
+                    //continue;
                 if (!conn.isUse)
                     continue;
 
@@ -241,8 +241,8 @@ namespace Server.Core {
         public void Close() {
             for (int i = 0; i < conns.Length; ++i) {
                 Conn conn = conns[i];
-                if (conn == null)
-                    continue;
+                //if (conn == null)
+                    //continue;
                 if (!conn.isUse)
                     continue;
                 lock (conn) {
@@ -254,8 +254,8 @@ namespace Server.Core {
         public void print() {
             Console.WriteLine("===服务器登录信息===");
             for (int i = 0; i < conns.Length; ++i) {
-                if (conns[i] == null)
-                    continue;
+                //if (conns[i] == null)
+                    //continue;
                 if (!conns[i].isUse)
                     continue;
 
