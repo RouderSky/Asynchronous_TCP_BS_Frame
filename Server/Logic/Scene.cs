@@ -13,31 +13,21 @@ namespace Server {
             instance = this;
         }
 
-        List<Avatar> list = new List<Avatar>();     //能不能用字典？
+        Dictionary<string, Avatar> dict = new Dictionary<string, Avatar>();     //能不能用字典？
 
-        //不广播，为什么？？？我觉得广播会好点
+        //加到服务器
         public void AddAvatar(string id) {
-            lock (list) {
+            lock (dict) {
                 Avatar avatar = new Avatar();
                 avatar.id = id;
-                list.Add(avatar);
+                dict[id] = avatar;
             }
         }
 
-        private Avatar GetAvatar(string id) {
-            for (int i = 0; i < list.Count; ++i) {
-                if (list[i].id == id)
-                    return list[i];
-            }
-            return null;
-        }
-
-        //广播
+        //加到服务器，广播
         public void DelAvatar(string id) {
-            lock (list) {
-                Avatar avatar = GetAvatar(id);
-                if (avatar != null)
-                    list.Remove(avatar);
+            lock (dict) {
+                dict.Remove(id);
             }
 
             ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
@@ -46,24 +36,32 @@ namespace Server {
             ServNet.instance.Broadcast(protocol);
         }
 
-        //在调用时广播
+        //更新到服务器，广播
         public void UpdateInfo(string id, float x, float y, float z, int score) {
-            Avatar avatar = GetAvatar(id);
+            Avatar avatar = dict[id];
             if (avatar == null)
                 return;
             avatar.x = x;
             avatar.y = y;
             avatar.z = z;
             avatar.score = score;
+
+            ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
+            protocolRet.AddString("UpdateInfo");
+            protocolRet.AddString(id);
+            protocolRet.AddFloat(x);
+            protocolRet.AddFloat(y);
+            protocolRet.AddFloat(z);
+            protocolRet.AddInt(score);
+            ServNet.instance.Broadcast(protocolRet);
         }
 
         public void SendAvatarList(Player player) {
-            int count = list.Count;
+            int count = dict.Count;
             ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
             protocol.AddString("GetList");
             protocol.AddInt(count);
-            for (int i = 0; i < count; ++i) {
-                Avatar avatar = list[i];
+            foreach (Avatar avatar in dict.Values){
                 protocol.AddString(avatar.id);
                 protocol.AddFloat(avatar.x);
                 protocol.AddFloat(avatar.y);

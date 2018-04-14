@@ -104,7 +104,8 @@ namespace Server.Core {
                     lock (conns[i]) {
                         if (conns[i].isUse == false) {
                             Conn conn = conns[i];
-                            conn.Init(socket);          //其实在这里就可以释放临界区了
+                            conn.Init(socket);
+                            //其实在这里就可以释放临界区了
                             string adr = conn.GetAddress();
                             Console.WriteLine("客户端连接 [" + adr + "] conn池ID：" + i);
 
@@ -232,7 +233,7 @@ namespace Server.Core {
             for (int i = 0; i < conns.Length; ++i) {
                 if (!conns[i].isUse)
                     continue;
-                if (conns[i].player == null)    //怎么不判断conns[i]本身了？？？
+                if (conns[i].player == null)
                     continue;
                 Send(conns[i], protocol);
             }

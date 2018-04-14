@@ -3,7 +3,7 @@
 using Server.Middle;
 
 namespace Server.Logic {
-    //感觉这个类里面的方法是多余的
+
     public class HandlePlayerEvent {
         public void OnLogin(Player player) {
             Scene.instance.AddAvatar(player.id);

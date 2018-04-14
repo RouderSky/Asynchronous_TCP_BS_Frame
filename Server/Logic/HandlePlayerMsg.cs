@@ -46,16 +46,6 @@ namespace Server.Logic {
             float z = protocol.GetFloat(start, ref start);
             int score = player.data.score;
             Scene.instance.UpdateInfo(player.id, x, y, z, score);
-
-            //广播，这段代码我觉得放进Scene.instance.UpdateInfo会好点..........
-            ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
-            protocolRet.AddString("UpdateInfo");
-            protocolRet.AddString(player.id);
-            protocolRet.AddFloat(x);
-            protocolRet.AddFloat(y);
-            protocolRet.AddFloat(z);
-            protocolRet.AddInt(score);
-            ServNet.instance.Broadcast(protocolRet);
         }
     }
 }
