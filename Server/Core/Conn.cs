@@ -60,7 +60,7 @@ namespace Server.Core {
             status = Status.Connected;
         }
 
-        public void Login(Player player, PlayerData playerData){
+        public void Login(Player player, PlayerData playerData) {
             status = Status.Login;
             this.player = player;
             this.player.data = playerData;
@@ -97,8 +97,10 @@ namespace Server.Core {
             status = Status.None;
         }
 
+        #region Helper
         public void Send(ProtocolBase protocol) {
             ServNet.instance.Send(this, protocol);
         }
+        #endregion
     }
 }
