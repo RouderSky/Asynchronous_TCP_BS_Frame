@@ -71,7 +71,7 @@ namespace Server.Core {
             //心跳处理用定时器，暂时关闭
             timer.Elapsed += new System.Timers.ElapsedEventHandler(HandleMainTimer);
             timer.AutoReset = false;
-            timer.Enabled = true;       //这样可以启动定时器？和Start的功能完全一样？
+            timer.Enabled = true;       //这样可以启动定时器？和Start的功能完全一样？？？
 
             conns = new Conn[maxConn];
             for (int i = 0; i < maxConn; ++i) {

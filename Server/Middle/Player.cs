@@ -63,7 +63,6 @@ namespace Server.Middle {
 
             conn.player = null;
             conn.status = Conn.Status.Connected;
-            //conn.Close();           //还是不要这样调用比较好，很恶心
 
             return true;
         }

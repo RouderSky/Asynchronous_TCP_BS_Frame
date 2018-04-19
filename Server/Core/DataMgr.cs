@@ -107,9 +107,9 @@ namespace Server.Core {
             }
             byte[] byteArr = stream.ToArray();
 
-            string cmdStr = string.Format("insert into player set id='{0}',data=@data;", id);   //@是什么意思？为什么不直接用'{1}'
+            string cmdStr = string.Format("insert into player set id='{0}',data=@data;", id);
             MySqlCommand cmd = new MySqlCommand(cmdStr, sqlConn);
-            cmd.Parameters.Add("@data", MySqlDbType.Blob);  //竟要依靠MySqlCommand来填充数据，C#不能填充？
+            cmd.Parameters.Add("@data", MySqlDbType.Blob);
             cmd.Parameters[0].Value = byteArr;
             try {
                 cmd.ExecuteNonQuery();

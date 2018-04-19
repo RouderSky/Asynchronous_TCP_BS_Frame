@@ -37,9 +37,10 @@ namespace Server.Logic {
 
         //更新avatar的信息
         //协议参数：x, y, z, score
+        //广播
+        //返回协议：无
         public void MsgUpdateInfo(Player player, ProtocolBase protocol) {
             int start = 0;
-            //ProtocolBytes protocol = (ProtocolBytes)proto;
             string protoName = protocol.GetString(start, ref start);
             float x = protocol.GetFloat(start, ref start);
             float y = protocol.GetFloat(start, ref start);

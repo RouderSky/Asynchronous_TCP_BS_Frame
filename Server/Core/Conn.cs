@@ -80,10 +80,6 @@ namespace Server.Core {
             if (status == Status.None)
                 return;
             if (status == Status.Login) {
-                /*
-                player.Logout();
-                return;         //就退出了？因为Logout会再调用Close
-                */
                 if (!player.Logout()) {
                     Console.WriteLine("玩家数据保存失败，无法关闭连接");
                     return;

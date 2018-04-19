@@ -24,7 +24,6 @@ namespace Server.Logic {
             
             //解析出所有参数
             int start = 0;
-            //ProtocolBytes protocol = (ProtocolBytes)proto;          //不转不行吗？？？
             string protoName = protocol.GetString(start, ref start);
             string id = protocol.GetString(start, ref start);
             string pw = protocol.GetString(start, ref start);
@@ -53,7 +52,6 @@ namespace Server.Logic {
         public void MsgLogin(Conn conn, ProtocolBase protocol) {
             //解析出所有参数
             int start = 0;
-            //ProtocolBytes protocol = (ProtocolBytes)proto;      //不转不行吗？？？
             string protoName = protocol.GetString(start, ref start);
             string id = protocol.GetString(start, ref start);
             string pw = protocol.GetString(start, ref start);
@@ -61,7 +59,7 @@ namespace Server.Logic {
 
             //检查密码
             bool ret = DataMgr.instance.CheckPassWord(id, pw);
-            protocol = ServNet.instance.proto.Decode(null, 0, 0);        //发送信息时竟然要手动new出指定的协议类型，不能由ServNet统一确定吗？？？
+            protocol = ServNet.instance.proto.Decode(null, 0, 0);
             protocol.AddString("Login");
             if (!ret) {
                 protocol.AddInt(-1);

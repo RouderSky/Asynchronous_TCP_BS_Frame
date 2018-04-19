@@ -13,7 +13,7 @@ namespace Server {
             instance = this;
         }
 
-        Dictionary<string, Avatar> dict = new Dictionary<string, Avatar>();     //能不能用字典？
+        Dictionary<string, Avatar> dict = new Dictionary<string, Avatar>();
 
         //加到服务器
         public void AddAvatar(string id) {
@@ -24,7 +24,7 @@ namespace Server {
             }
         }
 
-        //加到服务器，广播
+        //从服务器删除，广播
         public void DelAvatar(string id) {
             lock (dict) {
                 dict.Remove(id);
