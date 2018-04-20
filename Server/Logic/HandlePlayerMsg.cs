@@ -10,22 +10,22 @@ namespace Server.Logic {
         //获取分数
         //无参数
         //返回协议：int分数
-        public void MsgGetScore(Player player, ProtocolBase protocol) {
+        public void MsgGetMaxScore(Player player, ProtocolBase protocol) {
             ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
-            protocolRet.AddString("GetScore");
-            protocolRet.AddInt(player.data.score);
+            protocolRet.AddString("GetMaxScore");
+            protocolRet.AddInt(player.data.maxScore);
             player.Send(protocolRet);
-            Console.WriteLine("MsgGetScore " + player.id + " " + player.data.score.ToString());
+            Console.WriteLine("MsgGetMaxScore " + player.id + " " + player.data.maxScore.ToString());
         }
 
         //增加分数
         //无参数
         //返回协议：无
-        public void MsgAddScore(Player player, ProtocolBase protocol) {
-            player.data.score += 1;
+        public void MsgAddMaxScore(Player player, ProtocolBase protocol) {
+            player.data.maxScore += 1;
 
             ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
-            Console.WriteLine("MsgAddScore " + player.id + " " + player.data.score.ToString());
+            Console.WriteLine("MsgAddMaxScore " + player.id + " " + player.data.maxScore.ToString());
         }
 
         //获取场景的所有Avatar信息
@@ -45,7 +45,7 @@ namespace Server.Logic {
             float x = protocol.GetFloat(start, ref start);
             float y = protocol.GetFloat(start, ref start);
             float z = protocol.GetFloat(start, ref start);
-            int score = player.data.score;
+            int score = player.data.maxScore;
             Scene.instance.UpdateInfo(player.id, x, y, z, score);
         }
     }

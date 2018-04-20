@@ -10,7 +10,15 @@ namespace Server.Logic {
         }
 
         public void OnLogout(Player player) {
-            Scene.instance.DelAvatar(player.id);
+            if(player.tempData.status==PlayerTempData.Statue.Fight)
+                Scene.instance.DelAvatar(player.id);
+            if (player.tempData.status == PlayerTempData.Statue.Room) {
+                Room room = player.tempData.room;
+                room.DelPlayer(player);
+                if (room != null)        //没必要吧...........
+                    room.Broadcast(room.GetRoomInfoBack());
+            }
+
         }
     }
 }
