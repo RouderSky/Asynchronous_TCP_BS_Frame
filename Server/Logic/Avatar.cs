@@ -1,4 +1,5 @@
 ﻿
+//应该即将无用
 namespace Server {
     public class Avatar {
         public string id;

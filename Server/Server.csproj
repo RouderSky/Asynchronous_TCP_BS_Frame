@@ -48,6 +48,7 @@
     <Compile Include="Core\Conn.cs" />
     <Compile Include="Core\DataMgr.cs" />
     <Compile Include="Core\ServNet.cs" />
+    <Compile Include="Logic\HandleBattleMsg.cs" />
     <Compile Include="Logic\HandleConnMsg.cs" />
     <Compile Include="Logic\HandlePlayerEvent.cs" />
     <Compile Include="Logic\HandlePlayerMsg.cs" />

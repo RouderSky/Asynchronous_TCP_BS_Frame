@@ -15,12 +15,13 @@ namespace Server.Logic {
         }
         public Status status = Status.Prepare;
 
+        //注意线程安全
         public int maxPlayers = 6;
-        public Dictionary<string, Player> playerList = new Dictionary<string, Player>();      //字典有序的吗？是不是先Add在遍历Value的时候先被遍历到？？？
+        public Dictionary<string, Player> playerDict = new Dictionary<string, Player>();      //字典有序的吗？是不是先Add在遍历Value的时候先被遍历到？？？
 
         public bool AddPlayer(Player player) {
-            lock (playerList) {
-                if (playerList.Count >= maxPlayers)
+            lock (playerDict) {
+                if (playerDict.Count >= maxPlayers)
                     return false;
                     
                 PlayerTempData tempData = player.tempData;
@@ -29,7 +30,7 @@ namespace Server.Logic {
                 tempData.status = PlayerTempData.Statue.Room;
 
                 string id = player.id;
-                playerList.Add(id, player);
+                playerDict.Add(id, player);
             }
             return true;
         }
@@ -37,7 +38,7 @@ namespace Server.Logic {
         public int SwitchTeam() {
             int count1 = 0;
             int count2 = 0;
-            foreach (Player player in playerList.Values) {
+            foreach (Player player in playerDict.Values) {
                 if (player.tempData.team == 1)
                     count1++;
                 if (player.tempData.team == 2)
@@ -54,18 +55,18 @@ namespace Server.Logic {
             if (tempData.status == PlayerTempData.Statue.Lobby)
                 return;
 
-            lock (playerList) {
-                if (!playerList.ContainsKey(player.id))
+            lock (playerDict) {
+                if (!playerDict.ContainsKey(player.id))
                     return;
-                bool isOwner = playerList[player.id].tempData.isOwner;
-                playerList[player.id].tempData.status = PlayerTempData.Statue.Lobby;
-                playerList.Remove(player.id);
+                bool isOwner = playerDict[player.id].tempData.isOwner;
+                playerDict[player.id].tempData.status = PlayerTempData.Statue.Lobby;
+                playerDict.Remove(player.id);
                 if (isOwner)
                     UpdateOwner();      //不太合理.................
             }
 
-            lock (playerList) {
-                if (playerList.Count == 0) {
+            lock (playerDict) {
+                if (playerDict.Count == 0) {
                     lock (RoomMgr.instance.roomList) {
                         RoomMgr.instance.roomList.Remove(this);
                     }
@@ -76,20 +77,20 @@ namespace Server.Logic {
         //将目前最新进入房间的玩家设置为房主
         //不太合理.......................
         public void UpdateOwner() {
-            lock (playerList) {
-                if (playerList.Count <= 0)
+            lock (playerDict) {
+                if (playerDict.Count <= 0)
                     return;
 
-                foreach (Player player in playerList.Values)
+                foreach (Player player in playerDict.Values)
                     player.tempData.isOwner = false;
 
-                Player p = playerList.Values.First();
+                Player p = playerDict.Values.First();
                 p.tempData.isOwner = true;
             }
         }
 
         public void Broadcast(ProtocolBase protocol) {
-            foreach (Player player in playerList.Values) {
+            foreach (Player player in playerDict.Values) {
                 player.Send(protocol);
             }
         }
@@ -97,14 +98,60 @@ namespace Server.Logic {
         public ProtocolBase GetRoomInfoBack() {
             ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
             protocol.AddString("GetRoomInfo");
-            protocol.AddInt(playerList.Count);
-            foreach (Player p in playerList.Values) {
+            protocol.AddInt(playerDict.Count);
+            foreach (Player p in playerDict.Values) {
                 protocol.AddString(p.id);
                 protocol.AddInt(p.tempData.team);
                 protocol.AddInt(p.data.maxScore);
                 protocol.AddInt(p.tempData.isOwner ? 1 : 0);
             }
             return protocol;
+        }
+
+        public bool CanStartFight() {
+            if (status != Status.Prepare)
+                return false;
+
+            int count1 = 0;
+            int count2 = 0;
+
+            foreach (Player player in playerDict.Values) {
+                if (player.tempData.team == 1)
+                    count1++;
+                if (player.tempData.team == 2)
+                    count2++;
+            }
+
+            if (count1 < 1 || count2 < 1)
+                return false;
+
+            return true;
+        }
+
+        public void StartFight() {
+            status = Status.Fight;
+
+            //生成协议
+            ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
+            protocol.AddString("Fight");
+            lock (playerDict) {
+                protocol.AddInt(playerDict.Count);
+                int teamPos1 = 1;
+                int teamPos2 = 2;
+                foreach (Player p in playerDict.Values) {
+                    p.tempData.hp = 200;
+                    protocol.AddString(p.id);
+                    protocol.AddInt(p.tempData.team);
+                    if (p.tempData.team == 1)
+                        protocol.AddInt(teamPos1++);
+                    else
+                        protocol.AddInt(teamPos2++);
+                    p.tempData.status = PlayerTempData.Statue.Fight;
+                }
+            }
+
+            //广播
+            Broadcast(protocol);
         }
     }
 }

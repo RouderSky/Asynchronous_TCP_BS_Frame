@@ -10,8 +10,10 @@ namespace Server.Logic {
         }
 
         public void OnLogout(Player player) {
-            if(player.tempData.status==PlayerTempData.Statue.Fight)
+            if (player.tempData.status == PlayerTempData.Statue.Fight) {
                 Scene.instance.DelAvatar(player.id);
+                //还需要将玩家从房间删除...........
+            }
             if (player.tempData.status == PlayerTempData.Statue.Room) {
                 Room room = player.tempData.room;
                 room.DelPlayer(player);

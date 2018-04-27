@@ -32,7 +32,7 @@ namespace Server.Logic {
             protocol.AddInt(roomList.Count);
             for (int i = 0; i < roomList.Count; ++i) {
                 Room room = roomList[i];
-                protocol.AddInt(room.playerList.Count);
+                protocol.AddInt(room.playerDict.Count);
                 protocol.AddInt((int)room.status);
             }
             return protocol;
