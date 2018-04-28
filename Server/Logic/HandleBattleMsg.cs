@@ -73,7 +73,7 @@ namespace Server.Logic {
             player.tempData.posX = posX;
             player.tempData.posY = posY;
             player.tempData.posZ = posZ;
-            player.tempData.lastShootTime = Sys.GetTimeStamp();
+            player.tempData.lastUpdatePosTime = Sys.GetTimeStamp();
 
             //广播
             ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
@@ -88,6 +88,79 @@ namespace Server.Logic {
             protocolRet.AddFloat(gunRot);
             protocolRet.AddFloat(gunRoll);
             room.Broadcast(protocolRet);
+        }
+
+        //收到发射炮弹请求
+        //参数：posX，posY，posZ，rotX，rotY，rotZ
+        //返回协议：广播 id，posX，posY，posZ，rotX，rotY，rotZ
+        public void MsgShooting(Player player, ProtocolBase protocol) {
+            if (player.tempData.status != PlayerTempData.Statue.Fight)
+                return;
+            int start = 0;
+            string protoName = protocol.GetString(start, ref start);
+            float posX = protocol.GetFloat(start, ref start);
+            float posY = protocol.GetFloat(start, ref start);
+            float posZ = protocol.GetFloat(start, ref start);
+            float rotX = protocol.GetFloat(start, ref start);
+            float rotY = protocol.GetFloat(start, ref start);
+            float rotZ = protocol.GetFloat(start, ref start);
+
+            //广播
+            Room room = player.tempData.room;
+            ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
+            protocolRet.AddString("Shooting");
+            protocolRet.AddString(player.id);
+            protocolRet.AddFloat(posX);
+            protocolRet.AddFloat(posY);
+            protocolRet.AddFloat(posZ);
+            protocolRet.AddFloat(rotX);
+            protocolRet.AddFloat(rotY);
+            protocolRet.AddFloat(rotZ);
+            room.Broadcast(protocolRet);
+        }
+
+        //伤害
+        public void MsgHit(Player player, ProtocolBase protocol) {
+            if (player.tempData.status != PlayerTempData.Statue.Fight)
+                return;
+
+            //作弊校验
+            long lastShootTime = player.tempData.lastShootTime;
+            if (Sys.GetTimeStamp() - lastShootTime < 1) {
+                Console.WriteLine("MsgHit 开炮作弊 " + player.id);
+                return;
+            }
+            player.tempData.lastShootTime = Sys.GetTimeStamp();
+
+            int start = 0;
+            string protoName = protocol.GetString(start, ref start);
+            string enenmyID = protocol.GetString(start, ref start);
+            float damage = protocol.GetFloat(start, ref start);
+
+            //扣除生命值
+            Room room = player.tempData.room;
+            if (!room.playerDict.ContainsKey(enenmyID)) {
+                Console.WriteLine("MsgHit not Contains enemy " + enenmyID);
+                return;
+            }
+            Player enemy = room.playerDict[enenmyID];
+            if (enemy == null)
+                return;
+            if (enemy.tempData.hp <= 0)
+                return;
+            enemy.tempData.hp -= damage;
+            Console.WriteLine("MsgHit " + enenmyID + " hp:" + enemy.tempData.hp);
+
+            //广播
+            ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
+            protocolRet.AddString("Hit");
+            protocolRet.AddString(player.id);
+            protocolRet.AddString(enemy.id);
+            protocolRet.AddFloat(damage);
+            room.Broadcast(protocolRet);
+
+            //胜负判断
+            //room.UpdateWin();
         }
     }
 }

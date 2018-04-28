@@ -5,6 +5,8 @@ using Common;
 using Server.Core;
 using Server.Middle;
 
+
+//无用
 namespace Server {
     //需要是单例............
     public class Scene {

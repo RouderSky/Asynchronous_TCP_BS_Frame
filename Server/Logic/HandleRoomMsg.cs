@@ -29,14 +29,14 @@ namespace Server.Logic {
 
             if (player.tempData.status != PlayerTempData.Statue.Lobby) {
                 Console.WriteLine("玩家不在大厅，无法创建房间 " + player.id);
-                protocol.AddInt(-1);
-                player.Send(protocol);
+                backProtocol.AddInt(-1);
+                player.Send(backProtocol);
                 return;
             }
 
             RoomMgr.instance.CreateRoom(player);
-            protocol.AddInt(0);
-            player.Send(protocol);
+            backProtocol.AddInt(0);
+            player.Send(backProtocol);
             Console.WriteLine("创建房间成功 " + player.id);
         }
 
@@ -54,27 +54,27 @@ namespace Server.Logic {
 
             if (index < 0 || index >= RoomMgr.instance.roomList.Count) {
                 Console.WriteLine("指定房间不存在，" + player.id + " 无法进入房间");
-                protocol.AddInt(-1);
-                player.Send(protocol);
+                backProtocol.AddInt(-1);
+                player.Send(backProtocol);
                 return;
             }
 
             Room room = RoomMgr.instance.roomList[index];
             if(room.status != Room.Status.Prepare){
                 Console.WriteLine("指定房间不是准备状态，" + player.id + " 无法进入房间");
-                protocol.AddInt(-1);
-                player.Send(protocol);
+                backProtocol.AddInt(-1);
+                player.Send(backProtocol);
                 return;
             }
             if(room.AddPlayer(player)){
                 room.Broadcast(room.GetRoomInfoBack());
-                protocol.AddInt(0);
-                player.Send(protocol);
+                backProtocol.AddInt(0);
+                player.Send(backProtocol);
             }
             else{
                 Console.WriteLine("房间已满，" + player.id + " 无法进入房间");
-                protocol.AddInt(-1);
-                player.Send(protocol);
+                backProtocol.AddInt(-1);
+                player.Send(backProtocol);
             }
         }
 

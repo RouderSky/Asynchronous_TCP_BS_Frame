@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Server.Assistant;
+
 namespace Server.Logic {
     //玩家临时数据，每次上线都不同
     //为什么不把Avatar中的数据迁移到这里来？
@@ -19,14 +21,16 @@ namespace Server.Logic {
         public bool isOwner = false;
 
         //战场相关
-        public long lastUpdatePosTime;
+        public long lastUpdatePosTime;      //用于作弊校验
         public float posX;
         public float posY;
         public float posZ;
-        public long lastShootTime;
+        public long lastShootTime;          //用于作弊校验
         public float hp = 100;
 
-
-        //删掉了构造函数
+        public PlayerTempData() {
+            lastUpdatePosTime = Sys.GetTimeStamp();
+            lastShootTime = Sys.GetTimeStamp();
+        }
     }
 }
