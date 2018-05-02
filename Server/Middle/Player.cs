@@ -30,7 +30,7 @@ namespace Server.Middle {
         }
 
         //返回值代表，id这个用户是不是下线了
-        public static bool KickOff(string id, ProtocolBase proto) {
+        public static bool KickOff(string id) {
             Conn[] conns = ServNet.instance.conns;
             for(int i=0;i<conns.Length;++i){
                 //if (conns[i] == null)        //没必要
@@ -41,8 +41,9 @@ namespace Server.Middle {
                     continue;
                 if(conns[i].player.id == id){
                     lock(conns[i].player){
-                        if(proto != null)
-                            conns[i].player.Send(proto);
+                        ProtocolBase protocolNotify = ServNet.instance.proto.Decode(null, 0, 0);
+                        protocolNotify.AddString("ForceLogout");
+                        conns[i].player.Send(protocolNotify);    //通知被踢下线的客户端
                         if (conns[i].player.Logout())
                             return true;
                         else {

@@ -31,14 +31,14 @@ namespace Server.Logic {
 
             bool ret = DataMgr.instance.Register(id, pw);
 
-            //通知客户端注册结果
-            protocol = ServNet.instance.proto.Decode(null, 0, 0);
-            protocol.AddString("Register");
+            //返回协议
+            ProtocolBase protocolBack = ServNet.instance.proto.Decode(null, 0, 0);
+            protocolBack.AddString("Register");
             if (ret)
-                protocol.AddInt(0);
+                protocolBack.AddInt(0);
             else
-                protocol.AddInt(-1);
-            conn.Send(protocol);
+                protocolBack.AddInt(-1);
+            conn.Send(protocolBack);
 
             //创建角色:一个账号对应一个角色的模式
             if (ret) {
@@ -59,29 +59,27 @@ namespace Server.Logic {
 
             //检查密码
             bool ret = DataMgr.instance.CheckPassWord(id, pw);
-            protocol = ServNet.instance.proto.Decode(null, 0, 0);
-            protocol.AddString("Login");
+            ProtocolBase protocolBack = ServNet.instance.proto.Decode(null, 0, 0);
+            protocolBack.AddString("Login");
             if (!ret) {
-                protocol.AddInt(-1);
-                conn.Send(protocol);
+                protocolBack.AddInt(-1);
+                conn.Send(protocolBack);
                 return;
             }
 
             //检查是否已经登录了
-            ProtocolBase protocolLogout = ServNet.instance.proto.Decode(null, 0, 0);
-            protocolLogout.AddString("ForceLogout");
-            ret = Player.KickOff(id, protocolLogout);
+            ret = Player.KickOff(id);
             if (!ret) {
-                protocol.AddInt(-2);
-                conn.Send(protocol);
+                protocolBack.AddInt(-2);
+                conn.Send(protocolBack);
                 return;
             }
         
             //获取玩家数据
             PlayerData playerData = DataMgr.instance.GetPlayerData(id);
             if (playerData == null) {
-                protocol.AddInt(-3);
-                conn.Send(protocol);
+                protocolBack.AddInt(-3);
+                conn.Send(protocolBack);
                 return;
             }
 
@@ -91,26 +89,26 @@ namespace Server.Logic {
             //事件
             ServNet.instance.handlePlayerEvent.OnLogin(conn.player);
 
-            protocol.AddInt(0);
-            conn.Send(protocol);
+            protocolBack.AddInt(0);
+            conn.Send(protocolBack);
         }
 
         //登出
         //协议参数：无
         //返回协议：0代表成功，-1代表失败, -2代表瞎搞
         public void MsgLogout(Conn conn, ProtocolBase protocol) {
-            ProtocolBase protocolLogout = ServNet.instance.proto.Decode(null, 0, 0);
-            protocolLogout.AddString("Logout");
+            ProtocolBase protocolBack = ServNet.instance.proto.Decode(null, 0, 0);
+            protocolBack.AddString("Logout");
             if (conn.status == Conn.Status.Login) {
                 if (conn.player.Logout())
-                    protocolLogout.AddInt(0);
+                    protocolBack.AddInt(0);
                 else
-                    protocolLogout.AddInt(-1);
+                    protocolBack.AddInt(-1);
             }
             else {
-                protocolLogout.AddInt(-2);
+                protocolBack.AddInt(-2);
             }
-            conn.Send(protocolLogout);
+            conn.Send(protocolBack);
         }
 
     }
