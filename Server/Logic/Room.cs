@@ -153,5 +153,65 @@ namespace Server.Logic {
             //广播
             Broadcast(protocol);
         }
+
+        int IsWin() {
+            if (status != Status.Fight)
+                return 0;
+
+            int count1 = 0;
+            int count2 = 0;
+            foreach (Player player in playerDict.Values) {
+                PlayerTempData pt = player.tempData;
+                if (pt.team == 1 && pt.hp > 0) 
+                    count1++;
+                if (pt.team == 2 && pt.hp > 0)
+                    count2++;
+            }
+
+            if (count1 == 0)
+                return 2;
+            if (count2 == 0)
+                return 1;
+            return 0;
+        }
+
+        public void UpdateWin() {
+            int isWin = IsWin();
+            if (isWin == 0)
+                return;
+
+            status = Status.Prepare;        //原本放在临界区内的
+            lock (playerDict) {     //是不是锁错东西了？？？
+                foreach (Player player in playerDict.Values) {
+                    player.tempData.status = PlayerTempData.Statue.Room;        //不对，玩家可能还在战场中；但是为什么还能正常运行？？？......................
+                    if (player.tempData.team == isWin)
+                        player.data.maxScore++;     //只是模拟下更新数据，没有实际意义
+                }
+            }
+
+            //广播
+            ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
+            protocol.AddString("Result");
+            protocol.AddInt(isWin);
+            Broadcast(protocol);
+        }
+
+        //中途退出战斗
+        public void ExitFight(Player player) {
+            if (playerDict[player.id] != null)
+                playerDict[player.id].tempData.hp = -1;
+
+            //广播
+            ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
+            protocol.AddString("Hit");
+            protocol.AddString(player.id);
+            protocol.AddString(player.id);
+            protocol.AddFloat(999);
+            Broadcast(protocol);
+
+            UpdateWin();
+
+            DelPlayer(player);
+        }
     }
 }

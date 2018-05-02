@@ -26,7 +26,7 @@ namespace Server.Logic {
         public float posY;
         public float posZ;
         public long lastShootTime;          //用于作弊校验
-        public float hp = 100;
+        public float hp;
 
         public PlayerTempData() {
             lastUpdatePosTime = Sys.GetTimeStamp();

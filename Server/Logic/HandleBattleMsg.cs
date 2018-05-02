@@ -160,7 +160,7 @@ namespace Server.Logic {
             room.Broadcast(protocolRet);
 
             //胜负判断
-            //room.UpdateWin();
+            room.UpdateWin();
         }
     }
 }
