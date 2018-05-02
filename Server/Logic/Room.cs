@@ -51,9 +51,10 @@ namespace Server.Logic {
         }
 
         public void DelPlayer(Player player) {
+            /*
             PlayerTempData tempData = player.tempData;
             if (tempData.status == PlayerTempData.Statue.Lobby)
-                return;
+                return;*/
 
             lock (playerDict) {
                 if (!playerDict.ContainsKey(player.id))
@@ -61,8 +62,17 @@ namespace Server.Logic {
                 bool isOwner = playerDict[player.id].tempData.isOwner;
                 playerDict[player.id].tempData.status = PlayerTempData.Statue.Lobby;
                 playerDict.Remove(player.id);
-                if (isOwner)
-                    UpdateOwner();      //不太合理.................
+
+                if (isOwner) {
+                    if (playerDict.Count <= 0)
+                        return;
+
+                    foreach (Player playerTemp in playerDict.Values)
+                        playerTemp.tempData.isOwner = false;
+
+                    Player p = playerDict.Values.First();
+                    p.tempData.isOwner = true;
+                }
             }
 
             lock (playerDict) {
@@ -71,21 +81,6 @@ namespace Server.Logic {
                         RoomMgr.instance.roomList.Remove(this);
                     }
                 }
-            }
-        }
-
-        //将目前最新进入房间的玩家设置为房主
-        //不太合理.......................
-        public void UpdateOwner() {
-            lock (playerDict) {
-                if (playerDict.Count <= 0)
-                    return;
-
-                foreach (Player player in playerDict.Values)
-                    player.tempData.isOwner = false;
-
-                Player p = playerDict.Values.First();
-                p.tempData.isOwner = true;
             }
         }
 
@@ -137,9 +132,9 @@ namespace Server.Logic {
             lock (playerDict) {
                 protocol.AddInt(playerDict.Count);
                 int teamPos1 = 1;
-                int teamPos2 = 2;
+                int teamPos2 = 1;
                 foreach (Player p in playerDict.Values) {
-                    p.tempData.hp = 200;
+                    p.tempData.hp = 200;            //服务端玩家数据初始化
                     protocol.AddString(p.id);
                     protocol.AddInt(p.tempData.team);
                     if (p.tempData.team == 1)
@@ -181,7 +176,7 @@ namespace Server.Logic {
                 return;
 
             status = Status.Prepare;        //原本放在临界区内的
-            lock (playerDict) {     //是不是锁错东西了？？？
+            lock (playerDict) {
                 foreach (Player player in playerDict.Values) {
                     player.tempData.status = PlayerTempData.Statue.Room;        //不对，玩家可能还在战场中；但是为什么还能正常运行？？？......................
                     if (player.tempData.team == isWin)
@@ -196,22 +191,5 @@ namespace Server.Logic {
             Broadcast(protocol);
         }
 
-        //中途退出战斗
-        public void ExitFight(Player player) {
-            if (playerDict[player.id] != null)
-                playerDict[player.id].tempData.hp = -1;
-
-            //广播
-            ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
-            protocol.AddString("Hit");
-            protocol.AddString(player.id);
-            protocol.AddString(player.id);
-            protocol.AddFloat(999);
-            Broadcast(protocol);
-
-            UpdateWin();
-
-            DelPlayer(player);
-        }
     }
 }

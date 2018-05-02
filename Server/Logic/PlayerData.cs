@@ -9,8 +9,5 @@ namespace Server.Logic {
     [Serializable]
     public class PlayerData {
         public int maxScore = 0;
-        public PlayerData() {
-            //maxScore = 100;        //原本有的  
-        }
     }
 }

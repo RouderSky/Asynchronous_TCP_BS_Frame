@@ -21,11 +21,11 @@ namespace Server.Logic {
         //增加分数
         //无参数
         //返回协议：无
-        public void MsgAddMaxScore(Player player, ProtocolBase protocol) {
-            player.data.maxScore += 1;
+        //public void MsgAddMaxScore(Player player, ProtocolBase protocol) {
+        //    player.data.maxScore += 1;
 
-            ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
-            Console.WriteLine("MsgAddMaxScore " + player.id + " " + player.data.maxScore.ToString());
-        }
+        //    ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
+        //    Console.WriteLine("MsgAddMaxScore " + player.id + " " + player.data.maxScore.ToString());
+        //}
     }
 }

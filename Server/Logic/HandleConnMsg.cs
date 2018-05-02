@@ -95,19 +95,15 @@ namespace Server.Logic {
 
         //登出
         //协议参数：无
-        //返回协议：0代表成功，-1代表失败, -2代表瞎搞
+        //返回协议：0代表成功，-1代表失败
         public void MsgLogout(Conn conn, ProtocolBase protocol) {
             ProtocolBase protocolBack = ServNet.instance.proto.Decode(null, 0, 0);
             protocolBack.AddString("Logout");
-            if (conn.status == Conn.Status.Login) {
-                if (conn.player.Logout())
-                    protocolBack.AddInt(0);
-                else
-                    protocolBack.AddInt(-1);
-            }
-            else {
-                protocolBack.AddInt(-2);
-            }
+            if (conn.player.Logout())
+                protocolBack.AddInt(0);
+            else
+                protocolBack.AddInt(-1);
+
             conn.Send(protocolBack);
         }
 

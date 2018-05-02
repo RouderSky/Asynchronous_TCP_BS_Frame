@@ -15,7 +15,7 @@ namespace Server.Logic {
             instance = this;
         }
 
-        public List<Room> roomList = new List<Room>();
+        public List<Room> roomList = new List<Room>();          //使用列表是不正确的....................
 
         public void CreateRoom(Player player) {
             Room room = new Room();

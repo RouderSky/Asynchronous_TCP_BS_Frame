@@ -169,7 +169,7 @@ namespace Server.Core {
                     return;
                 }
                 Object[] obj = new object[] { conn, protoBase };
-                Console.WriteLine("[处理连接相关消息]" + conn.GetAddress() + "发起的" + methodName);
+                //Console.WriteLine("[处理连接相关消息]" + conn.GetAddress() + "发起的" + methodName);
                 mm.Invoke(handleConnMsg, obj);
             }   
             else {
@@ -180,7 +180,7 @@ namespace Server.Core {
                     return;
                 }
                 Object[] obj = new object[] { conn.player, protoBase };
-                Console.WriteLine("[处理游戏逻辑相关消息]" + conn.GetAddress() + "发起的" + methodName);
+                //Console.WriteLine("[处理游戏逻辑相关消息]" + conn.GetAddress() + "发起的" + methodName);
                 mm.Invoke(handlePlayerMsg, obj);
             }
 
