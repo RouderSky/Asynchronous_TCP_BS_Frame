@@ -17,7 +17,7 @@ namespace Server.Logic {
         //参数：无
         //返回协议:房间数，房间1内人数，房间1状态，...
         public void MsgGetRoomList(Player player, ProtocolBase protocol) {
-            player.Send(RoomMgr.instance.GetRoomListBack());
+            player.Send(RoomSystem.instance.GetRoomListBack());
         }
 
         //客户端请求创建房间
@@ -35,7 +35,7 @@ namespace Server.Logic {
                 return;
             }*/
 
-            RoomMgr.instance.CreateRoom(player);
+            RoomSystem.instance.CreateRoom(player);
             backProtocol.AddInt(0);
             player.Send(backProtocol);
             Console.WriteLine("创建房间成功 " + player.id);
@@ -53,22 +53,22 @@ namespace Server.Logic {
             ProtocolBase backProtocol = ServNet.instance.proto.Decode(null, 0, 0);
             backProtocol.AddString("EnterRoom");
 
-            if (index < 0 || index >= RoomMgr.instance.roomList.Count) {
+            if (index < 0 || index >= World.instance.roomList.Count) {
                 Console.WriteLine("指定房间不存在，" + player.id + " 无法进入房间");
                 backProtocol.AddInt(-1);
                 player.Send(backProtocol);
                 return;
             }
 
-            Room room = RoomMgr.instance.roomList[index];
+            Room room = World.instance.roomList[index];
             if(room.status != Room.Status.Prepare){
                 Console.WriteLine("指定房间不是准备状态，" + player.id + " 无法进入房间");
                 backProtocol.AddInt(-2);
                 player.Send(backProtocol);
                 return;
             }
-            if(room.AddPlayer(player)){
-                room.Broadcast(room.GetRoomInfoBack());
+            if(RoomSystem.instance.AddPlayerToRoom(room, player)){
+                RoomSystem.instance.BroadcastInRoom(room, room.GetRoomInfoBack());
                 backProtocol.AddInt(0);
                 player.Send(backProtocol);
             }
@@ -107,13 +107,13 @@ namespace Server.Logic {
                 return;
             }*/
             Room room = player.tempData.room;
-            room.DelPlayer(player);
+            RoomSystem.instance.DelPlayerForRoom(room, player);
             backProtocol.AddInt(0);
             player.Send(backProtocol);
 
             //广播
             if (room != null)    //没必要吧...............
-                room.Broadcast(room.GetRoomInfoBack());
+                RoomSystem.instance.BroadcastInRoom(room, room.GetRoomInfoBack());
         }
 
     }

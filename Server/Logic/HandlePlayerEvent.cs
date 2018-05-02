@@ -15,7 +15,7 @@ namespace Server.Logic {
             if (player.tempData.status == PlayerTempData.Statue.Fight) {
                 Room room = player.tempData.room;
 
-                room.DelPlayer(player);
+                RoomSystem.instance.DelPlayerForRoom(room, player);
 
                 //广播
                 ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
@@ -23,14 +23,14 @@ namespace Server.Logic {
                 protocol.AddString(player.id);
                 protocol.AddString(player.id);
                 protocol.AddFloat(999);
-                room.Broadcast(protocol);
+                RoomSystem.instance.BroadcastInRoom(room, protocol);
 
-                room.UpdateWin();
+                RoomSystem.instance.DealWithRoomWin(room);
             }
             if (player.tempData.status == PlayerTempData.Statue.Room) {
                 Room room = player.tempData.room;
-                room.DelPlayer(player);
-                room.Broadcast(room.GetRoomInfoBack());
+                RoomSystem.instance.DelPlayerForRoom(room, player);
+                RoomSystem.instance.BroadcastInRoom(room, room.GetRoomInfoBack());
             }
 
         }

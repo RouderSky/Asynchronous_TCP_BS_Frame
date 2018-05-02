@@ -42,7 +42,7 @@ namespace Server.Logic {
 
             protocol.AddInt(0);
             player.Send(protocol);
-            room.StartFight();
+            RoomSystem.instance.StartFightForRoom(room);
         }
 
         //收到transform信息
@@ -87,7 +87,7 @@ namespace Server.Logic {
             protocolRet.AddFloat(rotZ);
             protocolRet.AddFloat(gunRot);
             protocolRet.AddFloat(gunRoll);
-            room.Broadcast(protocolRet);
+            RoomSystem.instance.BroadcastInRoom(room, protocolRet);
         }
 
         //收到发射炮弹请求
@@ -116,7 +116,7 @@ namespace Server.Logic {
             protocolRet.AddFloat(rotX);
             protocolRet.AddFloat(rotY);
             protocolRet.AddFloat(rotZ);
-            room.Broadcast(protocolRet);
+            RoomSystem.instance.BroadcastInRoom(room, protocolRet);
         }
 
         //伤害
@@ -157,10 +157,10 @@ namespace Server.Logic {
             protocolRet.AddString(player.id);
             protocolRet.AddString(enemy.id);
             protocolRet.AddFloat(damage);
-            room.Broadcast(protocolRet);
+            RoomSystem.instance.BroadcastInRoom(room, protocolRet);
 
             //胜负判断
-            room.UpdateWin();
+            RoomSystem.instance.DealWithRoomWin(room);
         }
     }
 }

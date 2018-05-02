@@ -65,7 +65,8 @@ namespace Server {
 
             Console.Read();
 #else
-            RoomMgr roomMgr = new RoomMgr();
+            World world = new World();
+            RoomSystem roomMgr = new RoomSystem();
             DataMgr dataMgr = new DataMgr();
             ServNet servNet = new ServNet();
             servNet.proto = new ProtocolBytes();

@@ -18,7 +18,7 @@ namespace Server.Logic {
         //房间相关
         public Room room;
         public int team;
-        public bool isOwner = false;
+        public bool isOwner;
 
         //战场相关
         public long lastUpdatePosTime;      //用于作弊校验
