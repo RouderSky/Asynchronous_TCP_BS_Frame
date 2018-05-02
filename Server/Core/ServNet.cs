@@ -29,11 +29,11 @@ namespace Server.Core {
 
         //心跳处理
         System.Timers.Timer timer = new System.Timers.Timer(1000);      //检测用定时器
-        public long heartBeatTime = 50;        //最大通信间隔，单位是秒，有客户端超过这个时间没有通信过就断开
+        public long maxHeartBeatInterval = 50;        //最大通信间隔，单位是秒，有客户端超过这个时间没有通信过就断开
 
         //协议处理
         //由用户启动服务器的时候设置
-        public ProtocolBase proto;      //只是为了用来解码构造出一个协议信息，本身没有具体的消息
+        public ProtocolBase proto;      //服务器当前编码协议的格式，本身没有具体的消息
 
         //消息分发
         public HandleConnMsg handleConnMsg = new HandleConnMsg();
@@ -44,39 +44,36 @@ namespace Server.Core {
             instance = this;
         }
 
-        public void HeartBeat() {
-            //Console.WriteLine("[主定时器执行]");
+        void HandleMainTimer(object sender, System.Timers.ElapsedEventArgs e) {
+            //扫描所有的连接
             long timeNow = Sys.GetTimeStamp();
-
             for (int i = 0; i < conns.Length; ++i) {
                 Conn conn = conns[i];
-                //if (conn == null)       //不可能
-                    //continue;
+
                 if (conn.status == Conn.Status.None)
                     continue;
 
-                if (timeNow - conn.lastTickTime > heartBeatTime) {
+                if (timeNow - conn.lastTickTime > maxHeartBeatInterval) {
                     Console.WriteLine("[心跳引起断开连接]" + conn.GetAddress());
                     lock (conn)
                         conn.Close();
                 }
             }
-        }
-        public void HandleMainTimer(object sender, System.Timers.ElapsedEventArgs e) {
-            HeartBeat();
+
             timer.Start();      //这么做是确保上一次检测已经完成再开始下一次？？？
         }
         //启动服务器
         public void Start(string host, int port) {
-            //心跳处理用定时器，暂时关闭
-            timer.Elapsed += new System.Timers.ElapsedEventHandler(HandleMainTimer);
-            timer.AutoReset = false;
-            timer.Enabled = true;       //这样可以启动定时器？和Start的功能完全一样？？？
 
             conns = new Conn[maxConn];
             for (int i = 0; i < maxConn; ++i) {
                 conns[i] = new Conn();
             }
+
+            //心跳处理用定时器
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(HandleMainTimer);
+            timer.AutoReset = false;
+            timer.Enabled = true;       //这样可以启动定时器？和Start的功能完全一样？？？
 
             //Socket
             listenfd = new Socket(AddressFamily.InterNetwork,
@@ -96,7 +93,7 @@ namespace Server.Core {
             Console.WriteLine("[服务器]启动成功");
         }
 
-        private void AcceptCb(IAsyncResult ar) {
+        void AcceptCb(IAsyncResult ar) {
             try {
                 Socket socket = listenfd.EndAccept(ar);
 
@@ -130,7 +127,7 @@ namespace Server.Core {
             }
         }
 
-        private void ReceiveCb(IAsyncResult ar) {
+        void ReceiveCb(IAsyncResult ar) {
             Conn conn = (Conn)ar.AsyncState;
             lock (conn) {
                 try {
@@ -160,7 +157,7 @@ namespace Server.Core {
             }
         }
 
-        private void HandleMsg(Conn conn, ProtocolBase protoBase) {
+        void HandleMsg(Conn conn, ProtocolBase protoBase) {
             string name = protoBase.GetName();
             string methodName = "Msg" + name;
 
@@ -188,7 +185,7 @@ namespace Server.Core {
             }
 
         }
-        private void ProcessData(Conn conn) {
+        void ProcessData(Conn conn) {
             if (conn.buffCount < sizeof(Int32))
                 return;
 
@@ -228,7 +225,6 @@ namespace Server.Core {
             }
         }
 
-        //对玩家进行广播
         public void Broadcast(ProtocolBase protocol) {
             for (int i = 0; i < conns.Length; ++i) {
                 if (conns[i].status == Conn.Status.None)
@@ -240,26 +236,27 @@ namespace Server.Core {
         }
 
         public void Close() {
+            if (conns[0] == null)   //未启动服务器
+                return;
+
             for (int i = 0; i < conns.Length; ++i) {
                 Conn conn = conns[i];
-                //if (conn == null)
-                    //continue;
                 if (conn.status == Conn.Status.None)
                     continue;
                 lock (conn) {
-                    conn.Close();
+                    conn.Close();       //为什么还要这样关闭，直接清空conns数组不就好了？？？
                 }
             }
         }
 
         public void print() {
+            if (conns[0] == null)   //未启动服务器
+                return;
+
             Console.WriteLine("===服务器登录信息===");
             for (int i = 0; i < conns.Length; ++i) {
-                //if (conns[i] == null)
-                    //continue;
                 if (conns[i].status == Conn.Status.None)
                     continue;
-
                 string str = "连接[" + conns[i].GetAddress() + "] ";
                 if (conns[i].status == Conn.Status.Login)
                     str += "玩家id " + conns[i].player.id;

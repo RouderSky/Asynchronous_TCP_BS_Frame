@@ -29,15 +29,13 @@ namespace Server.Core {
 
         public Socket socket;
 
-        //public bool isUse = false;
-
         public byte[] readBuff = new byte[BUFFER_SIZE];
         public int buffCount = 0;
 
         public byte[] lenBytes = new byte[sizeof(UInt32)];
         public Int32 msgLength = 0;
 
-        public long lastTickTime = long.MinValue;   //该连接上一次通信时间
+        public long lastTickTime = long.MinValue;   //上一次心跳时间
 
         public Player player;
         public enum Status {
@@ -48,13 +46,8 @@ namespace Server.Core {
 
         public Status status = Status.None;
 
-        public Conn() {
-            //readBuff = new byte[BUFFER_SIZE];       //不需要再new一次
-        }
-
         public void Init(Socket socket) {
             this.socket = socket;
-            //isUse = true;
             buffCount = 0;
             lastTickTime = Sys.GetTimeStamp();
             status = Status.Connected;
