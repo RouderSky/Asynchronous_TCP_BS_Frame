@@ -35,7 +35,7 @@ namespace Server.Logic {
             return protocol;
         }
 
-        public void DealWithRoomWin(Room room) {
+        public void DealWithWinForRoom(Room room) {
             int isWin = room.IsWin();
             if (isWin == 0)
                 return;

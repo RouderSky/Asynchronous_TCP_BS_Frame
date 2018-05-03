@@ -112,7 +112,7 @@ namespace Server.Logic {
             player.Send(backProtocol);
 
             //广播
-            if (room != null)    //没必要吧...............
+            //if (room != null)
                 RoomSystem.instance.BroadcastInRoom(room, room.GetRoomInfoBack());
         }
 

@@ -75,7 +75,7 @@ namespace Server.Logic {
             player.tempData.posZ = posZ;
             player.tempData.lastUpdatePosTime = Sys.GetTimeStamp();
 
-            //广播
+            //加上id后广播
             ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
             protocolRet.AddString("UpdateUnitInfo");
             protocolRet.AddString(player.id);
@@ -105,7 +105,7 @@ namespace Server.Logic {
             float rotY = protocol.GetFloat(start, ref start);
             float rotZ = protocol.GetFloat(start, ref start);
 
-            //广播
+            //加上id后广播
             Room room = player.tempData.room;
             ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
             protocolRet.AddString("Shooting");
@@ -120,6 +120,8 @@ namespace Server.Logic {
         }
 
         //伤害
+        //参数：被击者id，伤害数值damage
+        //返回协议：广播 攻击者id，被击者id，伤害数值damage
         public void MsgHit(Player player, ProtocolBase protocol) {
             if (player.tempData.status != PlayerTempData.Statue.Fight)
                 return;
@@ -139,28 +141,30 @@ namespace Server.Logic {
 
             //扣除生命值
             Room room = player.tempData.room;
-            if (!room.playerDict.ContainsKey(enenmyID)) {
-                Console.WriteLine("MsgHit not Contains enemy " + enenmyID);
-                return;
+            lock (room.playerDict) {
+                if (!room.playerDict.ContainsKey(enenmyID)) {
+                    Console.WriteLine("MsgHit not Contains enemy " + enenmyID);
+                    return;
+                }
+                Player enemy = room.playerDict[enenmyID];
+                //             if (enemy == null)
+                //                 return;
+                if (enemy.tempData.hp <= 0)
+                    return;
+                enemy.tempData.hp -= damage;
+                Console.WriteLine("MsgHit " + enenmyID + " hp:" + enemy.tempData.hp);
             }
-            Player enemy = room.playerDict[enenmyID];
-            if (enemy == null)
-                return;
-            if (enemy.tempData.hp <= 0)
-                return;
-            enemy.tempData.hp -= damage;
-            Console.WriteLine("MsgHit " + enenmyID + " hp:" + enemy.tempData.hp);
 
             //广播
             ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
             protocolRet.AddString("Hit");
             protocolRet.AddString(player.id);
-            protocolRet.AddString(enemy.id);
+            protocolRet.AddString(enenmyID);
             protocolRet.AddFloat(damage);
             RoomSystem.instance.BroadcastInRoom(room, protocolRet);
 
             //胜负判断
-            RoomSystem.instance.DealWithRoomWin(room);
+            RoomSystem.instance.DealWithWinForRoom(room);
         }
     }
 }

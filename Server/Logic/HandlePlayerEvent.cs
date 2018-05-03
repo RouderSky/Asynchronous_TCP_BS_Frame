@@ -25,7 +25,7 @@ namespace Server.Logic {
                 protocol.AddFloat(999);
                 RoomSystem.instance.BroadcastInRoom(room, protocol);
 
-                RoomSystem.instance.DealWithRoomWin(room);
+                RoomSystem.instance.DealWithWinForRoom(room);
             }
             if (player.tempData.status == PlayerTempData.Statue.Room) {
                 Room room = player.tempData.room;
