@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Common;
 using Server.Assistant;
 using Server.Logic;
+using Server.Middle;
 
 namespace Server.Core {
 
@@ -23,7 +24,6 @@ namespace Server.Core {
         public Socket listenfd;
 
         public int maxConn = 50;        
-        public Conn[] conns;
 
         public static ServNet instance;
 
@@ -44,11 +44,43 @@ namespace Server.Core {
             instance = this;
         }
 
+#region Conn
+        public void InitConn(Conn conn, Socket socket) {
+            conn.socket = socket;
+            conn.buffCount = 0;
+            conn.lastTickTime = Sys.GetTimeStamp();
+            conn.status = Conn.Status.Connected;
+        }
+
+        public void ConnLogin(Conn conn, Player player, PlayerData playerData) {
+            conn.status = Conn.Status.Login;
+            conn.player = player;
+            conn.player.data = playerData;
+        }
+
+        public void CloseConn(Conn conn) {
+            if (conn.status == Conn.Status.None)
+                return;
+            if (conn.status == Conn.Status.Login) {
+                if (!conn.player.Logout()) {
+                    Console.WriteLine("玩家数据保存失败，无法关闭连接");
+                    return;
+                }
+                conn.status = Conn.Status.Connected;
+            }
+            Console.WriteLine("[断开连接]" + conn.GetAddress());
+
+            conn.socket.Shutdown(SocketShutdown.Both);       //？？？
+            conn.socket.Close();
+            conn.status = Conn.Status.None;
+        }
+#endregion
+
         void HandleMainTimer(object sender, System.Timers.ElapsedEventArgs e) {
             //扫描所有的连接
             long timeNow = Sys.GetTimeStamp();
-            for (int i = 0; i < conns.Length; ++i) {
-                Conn conn = conns[i];
+            for (int i = 0; i < World.instance.conns.Length; ++i) {
+                Conn conn = World.instance.conns[i];
 
                 if (conn.status == Conn.Status.None)
                     continue;
@@ -56,7 +88,7 @@ namespace Server.Core {
                 if (timeNow - conn.lastTickTime > maxHeartBeatInterval) {
                     Console.WriteLine("[心跳引起断开连接]" + conn.GetAddress());
                     lock (conn)
-                        conn.Close();
+                        ServNet.instance.CloseConn(conn);
                 }
             }
 
@@ -65,9 +97,9 @@ namespace Server.Core {
         //启动服务器
         public void Start(string host, int port) {
 
-            conns = new Conn[maxConn];
+            World.instance.conns = new Conn[maxConn];
             for (int i = 0; i < maxConn; ++i) {
-                conns[i] = new Conn();
+                World.instance.conns[i] = new Conn();
             }
 
             //心跳处理用定时器
@@ -97,11 +129,11 @@ namespace Server.Core {
             try {
                 Socket socket = listenfd.EndAccept(ar);
 
-                for (int i = 0; i < conns.Length; ++i) {
-                    lock (conns[i]) {
-                        if (conns[i].status == Conn.Status.None) {
-                            Conn conn = conns[i];
-                            conn.Init(socket);
+                for (int i = 0; i < World.instance.conns.Length; ++i) {
+                    lock (World.instance.conns[i]) {
+                        if (World.instance.conns[i].status == Conn.Status.None) {
+                            Conn conn = World.instance.conns[i];
+                            ServNet.instance.InitConn(conn, socket);
                             //其实在这里就可以释放临界区了
                             string adr = conn.GetAddress();
                             Console.WriteLine("客户端连接 [" + adr + "] conn池ID：" + i);
@@ -136,7 +168,7 @@ namespace Server.Core {
 
                     if (count <= 0) {
                         Console.WriteLine("收到 [" + conn.GetAddress() + "] 断开连接1");
-                        conn.Close();
+                        ServNet.instance.CloseConn(conn);
                         return;
                     }
 
@@ -152,7 +184,7 @@ namespace Server.Core {
                 }
                 catch(Exception e){
                     Console.WriteLine("收到 [" + conn.GetAddress() + "] 断开连接2 " + e.Message);
-                    conn.Close();
+                    ServNet.instance.CloseConn(conn);
                 }
             }
         }
@@ -226,40 +258,40 @@ namespace Server.Core {
         }
 
         public void Broadcast(ProtocolBase protocol) {
-            for (int i = 0; i < conns.Length; ++i) {
-                if (conns[i].status == Conn.Status.None)
+            for (int i = 0; i < World.instance.conns.Length; ++i) {
+                if (World.instance.conns[i].status == Conn.Status.None)
                     continue;
-                if (conns[i].status == Conn.Status.Connected)
+                if (World.instance.conns[i].status == Conn.Status.Connected)
                     continue;
-                Send(conns[i], protocol);
+                Send(World.instance.conns[i], protocol);
             }
         }
 
         public void Close() {
-            if (conns[0] == null)   //未启动服务器
+            if (World.instance.conns[0] == null)   //未启动服务器
                 return;
 
-            for (int i = 0; i < conns.Length; ++i) {
-                Conn conn = conns[i];
+            for (int i = 0; i < World.instance.conns.Length; ++i) {
+                Conn conn = World.instance.conns[i];
                 if (conn.status == Conn.Status.None)
                     continue;
                 lock (conn) {
-                    conn.Close();       //为什么还要这样关闭，直接清空conns数组不就好了？？？
+                    ServNet.instance.CloseConn(conn);       //为什么还要这样关闭，直接清空conns数组不就好了？？？
                 }
             }
         }
 
         public void print() {
-            if (conns[0] == null)   //未启动服务器
+            if (World.instance.conns[0] == null)   //未启动服务器
                 return;
 
             Console.WriteLine("===服务器登录信息===");
-            for (int i = 0; i < conns.Length; ++i) {
-                if (conns[i].status == Conn.Status.None)
+            for (int i = 0; i < World.instance.conns.Length; ++i) {
+                if (World.instance.conns[i].status == Conn.Status.None)
                     continue;
-                string str = "连接[" + conns[i].GetAddress() + "] ";
-                if (conns[i].status == Conn.Status.Login)
-                    str += "玩家id " + conns[i].player.id;
+                string str = "连接[" + World.instance.conns[i].GetAddress() + "] ";
+                if (World.instance.conns[i].status == Conn.Status.Login)
+                    str += "玩家id " + World.instance.conns[i].player.id;
 
                 Console.WriteLine(str);
             }

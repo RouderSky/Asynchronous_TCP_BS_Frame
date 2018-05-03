@@ -31,7 +31,7 @@ namespace Server.Middle {
 
         //返回值代表，id这个用户是不是下线了
         public static bool KickOff(string id) {
-            Conn[] conns = ServNet.instance.conns;
+            Conn[] conns = World.instance.conns;
             for(int i=0;i<conns.Length;++i){
                 //if (conns[i] == null)        //没必要
                 //    continue;

@@ -38,7 +38,7 @@ namespace Server.Logic {
                 protocolBack.AddInt(0);
             else
                 protocolBack.AddInt(-1);
-            conn.Send(protocolBack);
+            ServNet.instance.Send(conn, protocolBack);
 
             //创建角色:一个账号对应一个角色的模式
             if (ret) {
@@ -63,7 +63,7 @@ namespace Server.Logic {
             protocolBack.AddString("Login");
             if (!ret) {
                 protocolBack.AddInt(-1);
-                conn.Send(protocolBack);
+                ServNet.instance.Send(conn, protocolBack);
                 return;
             }
 
@@ -71,7 +71,7 @@ namespace Server.Logic {
             ret = Player.KickOff(id);
             if (!ret) {
                 protocolBack.AddInt(-2);
-                conn.Send(protocolBack);
+                ServNet.instance.Send(conn, protocolBack);
                 return;
             }
         
@@ -79,18 +79,18 @@ namespace Server.Logic {
             PlayerData playerData = DataMgr.instance.GetPlayerData(id);
             if (playerData == null) {
                 protocolBack.AddInt(-3);
-                conn.Send(protocolBack);
+                ServNet.instance.Send(conn, protocolBack);
                 return;
             }
 
             Player player = new Player(id, conn);
-            conn.Login(player, playerData);
+            ServNet.instance.ConnLogin(conn, player, playerData);
 
             //事件
             ServNet.instance.handlePlayerEvent.OnLogin(conn.player);
 
             protocolBack.AddInt(0);
-            conn.Send(protocolBack);
+            ServNet.instance.Send(conn, protocolBack);
         }
 
         //登出
@@ -104,7 +104,7 @@ namespace Server.Logic {
             else
                 protocolBack.AddInt(-1);
 
-            conn.Send(protocolBack);
+            ServNet.instance.Send(conn, protocolBack);
         }
 
     }

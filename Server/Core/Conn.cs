@@ -46,19 +46,6 @@ namespace Server.Core {
 
         public Status status = Status.None;
 
-        public void Init(Socket socket) {
-            this.socket = socket;
-            buffCount = 0;
-            lastTickTime = Sys.GetTimeStamp();
-            status = Status.Connected;
-        }
-
-        public void Login(Player player, PlayerData playerData) {
-            status = Status.Login;
-            this.player = player;
-            this.player.data = playerData;
-        }
-
         public int BuffRemain() {
             return BUFFER_SIZE - buffCount;
         }
@@ -68,28 +55,5 @@ namespace Server.Core {
                 return "无法获取地址";
             return socket.RemoteEndPoint.ToString();
         }
-
-        public void Close() {
-            if (status == Status.None)
-                return;
-            if (status == Status.Login) {
-                if (!player.Logout()) {
-                    Console.WriteLine("玩家数据保存失败，无法关闭连接");
-                    return;
-                }
-                status = Status.Connected;
-            }
-            Console.WriteLine("[断开连接]" + GetAddress());
-
-            socket.Shutdown(SocketShutdown.Both);       //？？？
-            socket.Close();
-            status = Status.None;
-        }
-
-        #region Helper
-        public void Send(ProtocolBase protocol) {
-            ServNet.instance.Send(this, protocol);
-        }
-        #endregion
     }
 }
