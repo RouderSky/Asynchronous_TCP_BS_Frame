@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Server.Core;
+using Server.Logic;
 
-namespace Server.Logic {
+namespace Server.Core {
     public class World {
         //下面都是单个Component就可以组成一个Entity，这些池可以直接放在System中
         #region Entity池

@@ -57,7 +57,7 @@
     <Compile Include="Logic\PlayerTempData.cs" />
     <Compile Include="Logic\Room.cs" />
     <Compile Include="Logic\RoomSystem.cs" />
-    <Compile Include="Logic\World.cs" />
+    <Compile Include="Core\World.cs" />
     <Compile Include="Middle\Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
