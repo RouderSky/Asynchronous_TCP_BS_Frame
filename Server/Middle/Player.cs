@@ -26,9 +26,10 @@ namespace Server.Middle {
         public void Send(ProtocolBase proto) {
             //if (conn == null)       //没必要
                 //return;
-            ServNet.instance.Send(conn, proto);
+            ServerSystem.instance.Send(conn, proto);
         }
 
+        //这个函数不用写在这里..................
         //返回值代表，id这个用户是不是下线了
         public static bool KickOff(string id) {
             Conn[] conns = World.instance.conns;

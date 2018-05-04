@@ -5,13 +5,14 @@ using Server.Core;
 
 namespace Server.Logic {
     public class World {
-
+        //下面都是单个Component就可以组成一个Entity，这些池可以直接放在System中
         #region Entity池
         //Component:Room
         //System:RoomSystem
         public List<Room> roomList = new List<Room>();          //使用列表是不正确的....................
         //Component:Conn
-        //System:ServNet
+        //System:ServerSystem
+        //SingletonComponent:ServNet
         public Conn[] conns;
         #endregion
 

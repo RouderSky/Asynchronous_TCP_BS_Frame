@@ -65,22 +65,24 @@ namespace Server {
 
             Console.Read();
 #else
-            World world = new World();
-            RoomSystem roomMgr = new RoomSystem();
-            DataMgr dataMgr = new DataMgr();
-            ServNet servNet = new ServNet();
-            servNet.proto = new ProtocolBytes();
-            servNet.Start("127.0.0.1", 1234);
+            new World();
+            new DataMgr();
+            new ServNet();
+            new ServerSystem();
+            new RoomSystem();
+            
+            ServNet.instance.proto = new ProtocolBytes();
+            ServerSystem.instance.Start("127.0.0.1", 1234);
             Console.ReadLine();
 
             while (true) {
                 string str = Console.ReadLine();
                 switch (str) {
                     case "quit":
-                        servNet.Close();
+                        ServerSystem.instance.Close();
                         return;
                     case "print":
-                        servNet.print();
+                        ServerSystem.instance.print();
                         break;
                 }
             }

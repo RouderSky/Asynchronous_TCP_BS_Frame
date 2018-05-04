@@ -122,8 +122,10 @@ namespace Server.Logic {
         }
 
         public void BroadcastInRoom(Room room, ProtocolBase protocol) {
-            foreach (Player player in room.playerDict.Values) {
-                player.Send(protocol);
+            lock (room.playerDict) {        //加了锁
+                foreach (Player player in room.playerDict.Values) {
+                    player.Send(protocol);
+                }
             }
         }
 
