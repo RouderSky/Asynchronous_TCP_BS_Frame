@@ -19,7 +19,7 @@ using Server.Middle;
 
 namespace Server.Core {
 
-    //要求单例.......................
+    //要求单例...
     class ServerSystem {
 
         public static ServerSystem instance;

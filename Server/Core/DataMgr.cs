@@ -16,7 +16,7 @@ using Server.Logic;
 using Server.Middle;
 
 namespace Server.Core {
-    //要求单例模式......................
+    //要求单例模式...
     public class DataMgr {
         MySqlConnection sqlConn;
 

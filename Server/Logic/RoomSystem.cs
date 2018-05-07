@@ -6,9 +6,8 @@ using Common;
 using Server.Core;
 using Server.Middle;
 
-//J................ 单例中的容器要十分注意线程安全
 namespace Server.Logic {
-    //要求单例......................
+    //要求单例...
     public class RoomSystem {
         public static RoomSystem instance;
         public RoomSystem() {
@@ -43,7 +42,7 @@ namespace Server.Logic {
             room.status = Room.Status.Prepare;        //原本放在临界区内的
             lock (room.playerDict) {
                 foreach (Player player in room.playerDict.Values) {
-                    player.tempData.status = PlayerTempData.Statue.Room;        //不对，玩家可能还在战场中；但是为什么还能正常运行？？？......................
+                    player.tempData.status = PlayerTempData.Statue.Room;        //不对，玩家可能还在战场中...
                     if (player.tempData.team == isWin)
                         player.data.maxScore++;     //只是模拟下更新数据，没有实际意义
                 }

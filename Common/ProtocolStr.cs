@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-//未测试.....................
+//未测试...
 
 namespace Common {
     public class ProtocolStr : ProtocolBase {

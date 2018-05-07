@@ -9,7 +9,7 @@ namespace Server.Core {
         #region Entity池
         //Component:Room
         //System:RoomSystem
-        public List<Room> roomList = new List<Room>();          //使用列表是不正确的....................
+        public List<Room> roomList = new List<Room>();          //使用列表是不正确的...
         //Component:Conn
         //System:ServerSystem
         //SingletonComponent:ServNet

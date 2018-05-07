@@ -43,7 +43,7 @@ namespace Server.Logic {
 
         //客户端请求加入指定房间
         //参数：房间index
-        //用index来确定应该进入的房间是不准确的，因为如果中途房间被关闭了，就会进入错误的房间.............
+        //用index来确定应该进入的房间是不准确的，因为如果中途房间被关闭了，就会进入错误的房间...
         //返回协议：0代表成功，-1代表失败，-2代表已开战，-3代表房间满
         public void MsgEnterRoom(Player player, ProtocolBase protocol) {
             int start = 0;

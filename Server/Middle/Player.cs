@@ -29,7 +29,7 @@ namespace Server.Middle {
             ServerSystem.instance.Send(conn, proto);
         }
 
-        //这个函数不用写在这里..................
+        //这个函数不用写在这里...
         //返回值代表，id这个用户是不是下线了
         public static bool KickOff(string id) {
             Conn[] conns = World.instance.conns;
