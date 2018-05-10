@@ -19,6 +19,18 @@ namespace Server.Logic {
         public int maxPlayers = 6;
         public Dictionary<string, Player> playerDict = new Dictionary<string, Player>();      //字典有序的吗？是不是先Add在遍历Value的时候先被遍历到？？？
 
+        public struct Box {
+            int type;
+            int posIdx;
+        }
+        public int posIdxNum = 286;
+        //buff盒子
+        public int buffBoxTypeNum = 2;
+        public List<Box> buffBoxs;
+        //skill盒子
+        public int skillBoxTypeNum = 1;
+        public List<Box> skillBoxs;
+
         public ProtocolBase GetRoomInfoBack() {
             ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
             protocol.AddString("GetRoomInfo");

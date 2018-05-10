@@ -127,12 +127,12 @@ namespace Server.Logic {
                 return;
 
             //作弊校验
-            long lastShootTime = player.tempData.lastShootTime;
-            if (Sys.GetTimeStamp() - lastShootTime < 1) {
-                Console.WriteLine("MsgHit 开炮作弊 " + player.id);
-                return;
-            }
-            player.tempData.lastShootTime = Sys.GetTimeStamp();
+//             long lastShootTime = player.tempData.lastShootTime;
+//             if (Sys.GetTimeStamp() - lastShootTime < 1) {
+//                 Console.WriteLine("MsgHit 开炮作弊 " + player.id);
+//                 return;
+//             }
+//             player.tempData.lastShootTime = Sys.GetTimeStamp();
 
             int start = 0;
             string protoName = protocol.GetString(start, ref start);
