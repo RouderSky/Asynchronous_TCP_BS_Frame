@@ -166,5 +166,38 @@ namespace Server.Logic {
             //胜负判断
             RoomSystem.instance.DealWithWinForRoom(room);
         }
+
+        //玩家拾取盒子
+        //参数：盒子id
+        //返回协议：0代表成功，-1代表失败
+        //          广播 要删除的Box的ID
+        public void MsgPlayerAvatarGetBox(Player player, ProtocolBase protocol) {
+            int start = 0;
+            string protoName = protocol.GetString(start, ref start);
+            string boxID = protocol.GetString(start, ref start);
+
+            bool flag = false;
+            lock (player.tempData.room.boxSet) {
+                if (player.tempData.room.boxSet.Contains(boxID)) {      //J...
+                    player.tempData.room.boxSet.Remove(boxID);          //J...
+                    flag = true;
+                }
+            }
+
+            ProtocolBase protocolBack = ServNet.instance.proto.Decode(null, 0, 0);
+            protocolBack.AddString("PlayerAvatarGetBox");
+            if (flag){
+                protocolBack.AddInt(0);
+
+                ProtocolBase protocolBroadcast = ServNet.instance.proto.Decode(null, 0, 0);
+                protocolBroadcast.AddString("DelBox");
+                protocolBroadcast.AddString(boxID);
+                RoomSystem.instance.BroadcastInRoom(player.tempData.room, protocolBroadcast);
+            }
+            else{
+                protocolBack.AddInt(-1);
+            }
+           player.Send(protocolBack);
+        }
     }
 }

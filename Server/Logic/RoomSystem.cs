@@ -128,6 +128,50 @@ namespace Server.Logic {
             }
         }
 
+        string GetGUID() {
+            System.Guid guid = new Guid();
+            guid = Guid.NewGuid();
+            string str = guid.ToString();
+            return str;
+        }
+
+        public static void BuffBoxTick(Room room) {
+            Random ran = new Random();
+            int buffType = ran.Next(0, room.buffBoxTypeNum);
+            int posIdx = ran.Next(0, room.posIdxNum);
+
+            string boxID = RoomSystem.instance.GetGUID();
+            lock (room.boxSet) {
+                room.boxSet.Add(boxID);     //J...
+            }
+
+            //广播
+            ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
+            protocol.AddString("AddBuffBox");
+            protocol.AddString(boxID);
+            protocol.AddInt(buffType);
+            protocol.AddInt(posIdx);
+            RoomSystem.instance.BroadcastInRoom(room, protocol);
+        }
+        public static void SkillBoxTick(Room room) {
+            Random ran = new Random();
+            int buffType = ran.Next(0, room.skillBoxTypeNum);
+            int posIdx = ran.Next(0, room.posIdxNum);
+
+            string boxID = RoomSystem.instance.GetGUID();
+            lock (room.boxSet) {
+                room.boxSet.Add(boxID);
+            }
+
+            //广播
+            ProtocolBase protocol = ServNet.instance.proto.Decode(null, 0, 0);
+            protocol.AddString("AddSkillBox");
+            protocol.AddString(boxID);
+            protocol.AddInt(buffType);
+            protocol.AddInt(posIdx);
+            RoomSystem.instance.BroadcastInRoom(room, protocol);
+        }
+
         public void StartFightForRoom(Room room) {
             room.status = Room.Status.Fight;
 
@@ -149,6 +193,16 @@ namespace Server.Logic {
                     p.tempData.status = PlayerTempData.Statue.Fight;
                 }
             }
+
+            //启动Box生成器
+            room.buffBoxTimer.AutoReset = true;
+            room.buffBoxTimer.Interval = room.buffBoxInterval;
+            room.buffBoxTimer.Elapsed += new System.Timers.ElapsedEventHandler((s,e) => BuffBoxTick(room));
+            room.buffBoxTimer.Start();
+            room.skillBoxTimer.AutoReset = true;
+            room.skillBoxTimer.Interval = room.skillBoxInterval;
+            room.skillBoxTimer.Elapsed += new System.Timers.ElapsedEventHandler((s, e) => SkillBoxTick(room));
+            room.skillBoxTimer.Start();
 
             //广播
             BroadcastInRoom(room, protocol);
