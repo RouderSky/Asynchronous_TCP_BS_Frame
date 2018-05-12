@@ -199,5 +199,36 @@ namespace Server.Logic {
             }
            player.Send(protocolBack);
         }
+
+        //释放技能
+        //参数：posX，posY，posZ，rotX，rotY，rotZ，skillType
+        //返回协议：广播 释放者id，posX，posY，posZ，rotX，rotY，rotZ，skillType
+        public void MsgReleaseSkill(Player player, ProtocolBase protocol) {
+            if (player.tempData.status != PlayerTempData.Statue.Fight)
+                return;
+            int start = 0;
+            string protoName = protocol.GetString(start, ref start);
+            float posX = protocol.GetFloat(start, ref start);
+            float posY = protocol.GetFloat(start, ref start);
+            float posZ = protocol.GetFloat(start, ref start);
+            float rotX = protocol.GetFloat(start, ref start);
+            float rotY = protocol.GetFloat(start, ref start);
+            float rotZ = protocol.GetFloat(start, ref start);
+            int skillType = protocol.GetInt(start, ref start);
+
+            //加上id后广播
+            Room room = player.tempData.room;
+            ProtocolBase protocolRet = ServNet.instance.proto.Decode(null, 0, 0);
+            protocolRet.AddString("ReleaseSkill");
+            protocolRet.AddString(player.id);
+            protocolRet.AddFloat(posX);
+            protocolRet.AddFloat(posY);
+            protocolRet.AddFloat(posZ);
+            protocolRet.AddFloat(rotX);
+            protocolRet.AddFloat(rotY);
+            protocolRet.AddFloat(rotZ);
+            protocolRet.AddInt(skillType);
+            RoomSystem.instance.BroadcastInRoom(room, protocolRet);
+        }
     }
 }
