@@ -27,7 +27,7 @@ namespace Server.Logic {
         public System.Timers.Timer buffBoxTimer = new System.Timers.Timer();
         public int buffBoxInterval = 8000;
         //skill盒子
-        public int skillBoxTypeNum = 13;
+        public int skillBoxTypeNum = 5;
         public System.Timers.Timer skillBoxTimer = new System.Timers.Timer();
         public int skillBoxInterval = 8000;
 

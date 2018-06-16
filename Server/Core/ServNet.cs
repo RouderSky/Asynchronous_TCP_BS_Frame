@@ -5,6 +5,7 @@ using Common;
 using Server.Logic;
 
 namespace Server.Core {
+    //要求单例...
     public class ServNet {
         public Socket listenfd;
 

@@ -3,7 +3,7 @@
 using Common;
 using Server.Core;
 using Server.Middle;
-using Server.Assistant;
+using Assistant;
 
 namespace Server.Logic {
     //partial关键字表明这个类定义并不完整，只是一部分

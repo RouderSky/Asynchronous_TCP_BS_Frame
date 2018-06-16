@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Server.Assistant;
+using Assistant;
 
 namespace Server.Logic {
     //玩家临时数据，每次上线都不同

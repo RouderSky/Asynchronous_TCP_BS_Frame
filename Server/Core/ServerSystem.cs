@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Common;
-using Server.Assistant;
+using Assistant;
 using Server.Logic;
 using Server.Middle;
 
@@ -227,6 +227,10 @@ namespace Server.Core {
             byte[] bytes = protocol.Encode();     //为什么这里发送用的是UTF8？到底什么时候该用什么格式
             byte[] length = BitConverter.GetBytes((Int32)bytes.Length);
             byte[] sendBuff = length.Concat(bytes).ToArray();           //为什么还要ToArray？
+
+            int start = 0;
+            string protoName = protocol.GetString(start, ref start);
+            Console.WriteLine("发送消息：" + protoName + " 到：" + conn.GetAddress());
 
             try {
                 conn.socket.BeginSend(sendBuff,

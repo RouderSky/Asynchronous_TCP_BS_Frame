@@ -43,7 +43,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assistant\Sys.cs" />
     <Compile Include="Core\Conn.cs" />
     <Compile Include="Core\DataMgr.cs" />
     <Compile Include="Core\ServerSystem.cs" />
@@ -66,6 +65,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Assistant\Assistant.csproj">
+      <Project>{460cd379-4231-4646-8025-cc7bf05bff38}</Project>
+      <Name>Assistant</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{25df8d4e-7ea9-4388-832e-a33530ec6a30}</Project>
       <Name>Common</Name>

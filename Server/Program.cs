@@ -72,7 +72,11 @@ namespace Server {
             new RoomSystem();
             
             ServNet.instance.proto = new ProtocolBytes();
-            ServerSystem.instance.Start("127.0.0.1", 1234);
+            string ip;
+            int port;
+            ip = Console.ReadLine();
+            port = int.Parse(Console.ReadLine());
+            ServerSystem.instance.Start(ip, port);
             Console.ReadLine();
 
             while (true) {

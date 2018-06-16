@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Common {
+namespace Client {
     class Program {
         static void Main(string[] args) {
-
         }
     }
 }

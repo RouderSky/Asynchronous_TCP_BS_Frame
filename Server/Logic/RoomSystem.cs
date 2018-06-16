@@ -194,6 +194,9 @@ namespace Server.Logic {
                 }
             }
 
+            //清除所有Box
+            room.boxSet.Clear();
+
             //启动Box生成器
             room.buffBoxTimer.AutoReset = true;
             room.buffBoxTimer.Interval = room.buffBoxInterval;

@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using Server.Logic;
 
 namespace Server.Core {
+    //要求单例...
     public class World {
         //下面都是单个Component就可以组成一个Entity，这些池可以直接放在System中
         #region Entity池
         //Component:Room
         //System:RoomSystem
         public List<Room> roomList = new List<Room>();          //使用列表是不正确的...
+        
         //Component:Conn
         //System:ServerSystem
         //SingletonComponent:ServNet

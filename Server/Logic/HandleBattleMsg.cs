@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Server.Middle;
 using Common;
-using Server.Assistant;
+using Assistant;
 using Server.Core;
 
 namespace Server.Logic {
@@ -42,6 +42,7 @@ namespace Server.Logic {
 
             protocol.AddInt(0);
             player.Send(protocol);
+            RoomSystem.instance.BroadcastInRoom(room,protocol);
             RoomSystem.instance.StartFightForRoom(room);
         }
 
