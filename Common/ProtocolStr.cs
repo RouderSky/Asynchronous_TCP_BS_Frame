@@ -58,5 +58,19 @@ namespace Common {
         public override string GetDesc() {
             return str;
         }
+
+        //未测试...
+        public override void AddStream(byte[] bs) {
+
+        }
+        public override byte[] GetStream(int start, ref int end) {
+            return null;
+        }
+        public override void AddObject<T>(T t) {
+
+        }
+        public override T GetObject<T>(int start, ref int end) {
+            return default(T);
+        }
     }
 }

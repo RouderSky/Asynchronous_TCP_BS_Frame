@@ -95,5 +95,47 @@ namespace Common {
             end = start + sizeof(float);
             return BitConverter.ToSingle(bytes, start);
         }
+
+        //未测试...
+        public override void AddStream(byte[] bs) {
+            byte[] numBytes = BitConverter.GetBytes(bs.Length);
+            if (bytes == null)
+                bytes = numBytes;
+            else
+                bytes = bytes.Concat(numBytes).ToArray();
+
+            bytes = bytes.Concat(bs).ToArray();
+        }
+
+        //未测试...
+        public override byte[] GetStream(int start, ref int end) {
+            if (bytes == null)
+                return null;
+            if (bytes.Length < start + sizeof(int))
+                return null;
+
+            int length =  BitConverter.ToInt32(bytes, start);
+            if (bytes.Length < start + sizeof(int) + length)
+                return null;
+
+            end = start + sizeof(Int32) + length;
+
+            byte[] bs = new byte[length];
+            Array.Copy(bytes, start + sizeof(Int32), bs, 0, length);
+            return bs;
+        }
+
+        //未测试...
+        public override void AddObject<T>(T t) {
+            byte[] bs = Serialize<T>(t);
+            AddStream(bs);
+        }
+        //未测试...
+        public override T GetObject<T>(int start, ref int end) {
+            byte[] bs = GetStream(start, ref end);
+            if (bs == null)
+                return default(T);
+            return Deserialize<T>(bs);
+        }
     }
 }

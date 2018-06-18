@@ -13,12 +13,7 @@ namespace Client.Core {
     public class Connection {
         public Socket socket;
 
-        const int BUFFER_SIZE = 1024;
-        byte[] readBuff = new byte[BUFFER_SIZE];
-        int buffCount = 0;
-
-        Int32 msgLength = 0;
-        byte[] lenBytes = new byte[sizeof(Int32)];
+        NetPackage recvNetPachage = new NetPackage();
 
         public ProtocolBase proto;
 
@@ -49,9 +44,9 @@ namespace Client.Core {
 
                 socket.Connect(host, port);
 
-                socket.BeginReceive(readBuff,
-                                    buffCount,
-                                    BUFFER_SIZE - buffCount,
+                socket.BeginReceive(recvNetPachage.buffer,
+                                    recvNetPachage.bufferCount,
+                                    recvNetPachage.BuffRemain(),
                                     SocketFlags.None,
                                     ReceiveCb,
                                     null);      //改
@@ -94,11 +89,11 @@ namespace Client.Core {
                     return;
                 }
 
-                buffCount = buffCount + count;
+                recvNetPachage.bufferCount = recvNetPachage.bufferCount + count;
                 ProcessData();
-                socket.BeginReceive(readBuff,
-                                    buffCount,
-                                    BUFFER_SIZE - buffCount,
+                socket.BeginReceive(recvNetPachage.buffer,
+                                    recvNetPachage.bufferCount,
+                                    recvNetPachage.BuffRemain(),
                                     SocketFlags.None,
                                     ReceiveCb,
                                     null);      //改
@@ -111,24 +106,19 @@ namespace Client.Core {
 
         //处理粘包、分包
         public void ProcessData() {
-            if (buffCount < sizeof(Int32))
+            if (!recvNetPachage.DecodeHeader())
                 return;
-            Array.Copy(readBuff, lenBytes, sizeof(Int32));
-            msgLength = BitConverter.ToInt32(lenBytes, 0);
-            if (msgLength > buffCount - sizeof(Int32))
+            if (!recvNetPachage.HasEnoughData())
                 return;
 
-            ProtocolBase protocol = proto.Decode(readBuff, sizeof(Int32), msgLength);
+            ProtocolBase protocol = proto.Decode(recvNetPachage.buffer, NetPackage.HEADER_SIZE, recvNetPachage.msgLength);
             Console.WriteLine("收到消息 " + protocol.GetDesc());
-            
+
             msgDist.AddMsg(protocol);
 
-            int count = buffCount - msgLength - sizeof(Int32);
-            Array.Copy(readBuff, sizeof(Int32) + msgLength, readBuff, 0, count);
-            buffCount = count;
-            if (buffCount > 0) {
+            recvNetPachage.DeleteCurData();
+            if (recvNetPachage.HasData())
                 ProcessData();
-            }
         }
 
         public bool Send(ProtocolBase protocol) {
@@ -137,9 +127,7 @@ namespace Client.Core {
                 return false;
             }
 
-            byte[] content = protocol.Encode();
-            byte[] length = BitConverter.GetBytes(content.Length);
-            byte[] sendBuff = length.Concat(content).ToArray();
+            byte[] sendBuff = NetPackage.EncoderHeader(protocol);
             socket.Send(sendBuff);
             //Debug.Log("发送消息 " + protocol.GetDesc());
             return true;
