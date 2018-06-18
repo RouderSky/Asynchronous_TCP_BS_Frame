@@ -47,6 +47,7 @@ namespace Client.Core {
             }
         }
 
+        //可以开一个独立的线程来调用这个函数，但是在Unity中，支线程无法操作UI控件
         //处理接收到的协议
         public void Update() {
             for (int i = 0; i < num; ++i) {

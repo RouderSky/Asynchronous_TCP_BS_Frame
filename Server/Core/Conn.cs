@@ -25,9 +25,9 @@ using Server.Logic;
 //加一个updateLastTickTime
 namespace Server.Core {
     public class Conn {
-        private const int BUFFER_SIZE = 1024;
-
         public Socket socket;
+
+        private const int BUFFER_SIZE = 1024;
 
         public byte[] readBuff = new byte[BUFFER_SIZE];
         public int buffCount = 0;
