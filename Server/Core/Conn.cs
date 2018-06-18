@@ -27,13 +27,7 @@ namespace Server.Core {
     public class Conn {
         public Socket socket;
 
-        private const int BUFFER_SIZE = 1024;
-
-        public byte[] readBuff = new byte[BUFFER_SIZE];
-        public int buffCount = 0;
-
-        public byte[] lenBytes = new byte[sizeof(UInt32)];
-        public Int32 msgLength = 0;
+        public NetPackage recvNetPackage;
 
         public long lastTickTime = long.MinValue;   //上一次心跳时间
 
@@ -45,10 +39,6 @@ namespace Server.Core {
         };
 
         public Status status = Status.None;
-
-        public int BuffRemain() {
-            return BUFFER_SIZE - buffCount;
-        }
 
         public string GetAddress() {
             if (status == Status.None)

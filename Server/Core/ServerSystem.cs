@@ -31,7 +31,7 @@ namespace Server.Core {
 #region Conn
         public void InitConn(Conn conn, Socket socket) {
             conn.socket = socket;
-            conn.buffCount = 0;
+            conn.recvNetPackage = new NetPackage();
             conn.lastTickTime = Sys.GetTimeStamp();
             conn.status = Conn.Status.Connected;
         }
@@ -122,9 +122,9 @@ namespace Server.Core {
                             string adr = conn.GetAddress();
                             Console.WriteLine("客户端连接 [" + adr + "] conn池ID：" + i);
 
-                            conn.socket.BeginReceive(conn.readBuff,
-                                                     conn.buffCount,
-                                                     conn.BuffRemain(),
+                            conn.socket.BeginReceive(conn.recvNetPackage.buffer,
+                                                     conn.recvNetPackage.bufferCount,
+                                                     conn.recvNetPackage.BuffRemain(),
                                                      SocketFlags.None,
                                                      ReceiveCb,
                                                      conn);
@@ -156,12 +156,12 @@ namespace Server.Core {
                         return;
                     }
 
-                    conn.buffCount += count;
+                    conn.recvNetPackage.bufferCount += count;
                     ProcessData(conn);
 
-                    conn.socket.BeginReceive(conn.readBuff,
-                                            conn.buffCount,
-                                            conn.BuffRemain(),
+                    conn.socket.BeginReceive(conn.recvNetPackage.buffer,
+                                            conn.recvNetPackage.bufferCount,
+                                            conn.recvNetPackage.BuffRemain(),
                                             SocketFlags.None,
                                             ReceiveCb,
                                             conn);
@@ -202,35 +202,26 @@ namespace Server.Core {
 
         }
         void ProcessData(Conn conn) {
-            if (conn.buffCount < sizeof(Int32))
+            if (!conn.recvNetPackage.DecodeHeader())    //每次都要计算一次长度，有点耗费性能
                 return;
-
-            //尝试找出一条完整消息的长度
-            Array.Copy(conn.readBuff, conn.lenBytes, sizeof(Int32));
-            conn.msgLength = BitConverter.ToInt32(conn.lenBytes, 0);
-            if (conn.buffCount < conn.msgLength + sizeof(Int32))
+            if (!conn.recvNetPackage.HasEnoughData())
                 return;
-
+            
             //处理消息
-            ProtocolBase protocol = ServNet.instance.proto.Decode(conn.readBuff, sizeof(Int32), conn.msgLength);
+            ProtocolBase protocol = ServNet.instance.proto.Decode(conn.recvNetPackage.buffer, NetPackage.HEADER_SIZE, conn.recvNetPackage.msgLength);
             HandleMsg(conn, protocol);
 
-            //处理下一条消息
-            int count = conn.buffCount - conn.msgLength - sizeof(Int32);
-            Array.Copy(conn.readBuff, sizeof(Int32) + conn.msgLength, conn.readBuff, 0, count);
-            conn.buffCount = count;
-            if (conn.buffCount > 0)
+            conn.recvNetPackage.DeleteCurData();
+            if (conn.recvNetPackage.HasData())
                 ProcessData(conn);
         }
 
         public void Send(Conn conn, ProtocolBase protocol) {
-            byte[] bytes = protocol.Encode();     //为什么这里发送用的是UTF8？到底什么时候该用什么格式
-            byte[] length = BitConverter.GetBytes((Int32)bytes.Length);
-            byte[] sendBuff = length.Concat(bytes).ToArray();           //为什么还要ToArray？
-
             int start = 0;
             string protoName = protocol.GetString(start, ref start);
             Console.WriteLine("发送消息：" + protoName + " 到：" + conn.GetAddress());
+
+            byte[] sendBuff = NetPackage.EncoderHeader(protocol);
 
             try {
                 conn.socket.BeginSend(sendBuff,
